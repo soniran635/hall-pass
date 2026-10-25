@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#090d16">
+  <title>Hall Pass</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #0f172a;
+      --border: #1e293b;
+      --border-focus: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --btn-base: #1e293b;
+      --c-bath: #38bdf8;
+      --c-hall: #818cf8;
+      --c-misc: #c084fc;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 16px) env(safe-area-inset-left, 16px);
+      overflow-x: hidden;
+    }
+
+    .sim-bar {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+    }
+    .sim-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+    .sim-btn {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .sim-btn:active {
+      color: #fff;
+      border-color: #38bdf8;
+    }
+
+    .kiosk-frame {
+      width: 100%;
+      max-width: 640px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 28px;
+      padding: 32px 28px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .kiosk-frame.full-width {
+      max-width: 900px;
+    }
+
+    .header-tag {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .header-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 0 6px 0;
+      color: var(--text);
+    }
+
+    .header-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin: 0 0 24px 0;
+    }
+
+    .kiosk-btn {
+      width: 100%;
+      background: var(--btn-base);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .kiosk-btn:active {
+      transform: scale(0.985);
+    }
+    .kiosk-btn h2 {
+      margin: 0;
+      font-size: 1.45rem;
+      color: var(--text);
+    }
+    .kiosk-btn p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .btn-bath { border-color: var(--c-bath); }
+    .btn-bath:active { background: rgba(56, 189, 248, 0.1); }
+    .btn-hall { border-color: var(--c-hall); }
+    .btn-hall:active { background: rgba(129, 140, 248, 0.1); }
+    .btn-misc { border-color: var(--c-misc); }
+    .btn-misc:active { background: rgba(192, 132, 252, 0.1); }
+
+    .period-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .period-btn {
+      background: var(--btn-base);
+      border: 1.5px solid var(--border-focus);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .period-btn:active {
+      transform: scale(0.985);
+      background: rgba(56, 189, 248, 0.15);
+    }
+    .period-btn h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--text);
+    }
+    .period-btn p {
+      margin: 4px 0 0 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border-focus);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 17px;
+      color: #fff;
+      outline: none;
+      margin-bottom: 14px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .student-list {
+      max-height: 340px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .student-item {
+      background: var(--btn-base);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .student-item:active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--border-focus);
+    }
+
+    .timer-screen {
+      text-align: center;
+      padding: 24px 0;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .badge-ontime { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+    .badge-grace { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid #f59e0b; }
+    .badge-overdue { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+    .timer-num {
+      font-size: 5.5rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      margin: 12px 0;
+    }
+    .btn-return {
+      width: 100%;
+      background: var(--success);
+      color: #000;
+      border: none;
+      border-radius: 18px;
+      padding: 22px;
+      font-size: 1.5rem;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: transform 0.1s ease;
+    }
+    .btn-return:active {
+      transform: scale(0.985);
+      background: #16a34a;
+    }
+
+    .btn-nav {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-nav:active {
+      color: var(--text);
+      border-color: #64748b;
+    }
+
+    .btn-teal {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-teal:active { background: #0369a1; }
+
+    .admin-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .admin-card h3 {
+      margin: 0 0 6px 0;
+      font-size: 1.1rem;
+      color: var(--c-bath);
+    }
+    .admin-card p {
+      margin: 0 0 10px 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    textarea.admin-input {
+      width: 100%;
+      height: 90px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 16px;
+      font-family: monospace;
+      outline: none;
+      resize: vertical;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    textarea.admin-input:focus { border-color: var(--border-focus); }
+
+    .log-table-wrap {
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+    th { background: #1e293b; padding: 10px 12px; color: var(--text); font-weight: 700; position: sticky; top: 0; }
+    td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="sim-bar">
+  <span style="color: #38bdf8; font-weight: 700;">Hall Pass • Kiosk Testing</span>
+  <div class="sim-btn-group">
+    <button class="sim-btn" onclick="toggleSimWidth()">Toggle Layout Width</button>
+    <button class="sim-btn" id="fwdBtn" style="display: none;" onclick="simFastForward(60)">+1m</button>
+    <button class="sim-btn" id="graceBtn" style="display: none;" onclick="simJumpGrace()">Test Grace</button>
+    <button class="sim-btn" id="overdueBtn" style="display: none;" onclick="simJumpOverdue()">Test Overdue</button>
+  </div>
+</div>
+
+<div class="kiosk-frame" id="app"></div>
+
+<script>
+  const DEFAULT_ROSTER = {
+    "1": { course: "College Math", students: ["Alex Rivera", "David Chen", "Emma Watson", "Lucas Miller", "Sarah Jenkins"] },
+    "2": { course: "Calculus", students: ["Brandon Scott", "Chloe Adams", "Daniel Ortiz", "Jessica Taylor", "Noah Kim"] },
+    "3": { course: "College Math", students: ["Aiden Clark", "Emily Zhang", "James Wilson", "Mia Patel", "Sophia Rossi"] },
+    "4": { course: "Calculus", students: ["Andrew Bell", "Grace Morales", "Jack Murphy", "Liam Nelson", "Olivia Diaz"] },
+    "5": { course: "College Math", students: ["Benjamin Lee", "Ella Flores", "Hannah Brooks", "Logan Wright", "Mason Hall"] }
+  };
+
+  let store = {
+    pin: localStorage.getItem("hp_pin") || "1234",
+    webhookUrl: localStorage.getItem("hp_webhook") || "",
+    rosters: JSON.parse(localStorage.getItem("hp_rosters")) || DEFAULT_ROSTER,
+    logs: JSON.parse(localStorage.getItem("hp_logs")) || [],
+    baseSeconds: 300,
+    graceSeconds: 390
+  };
+
+  let session = {
+    view: "REASON",
+    reasonEn: "",
+    reasonEs: "",
+    period: "1",
+    course: "",
+    studentName: "",
+    departTime: null,
+    timerInterval: null
+  };
+
+  const app = document.getElementById("app");
+
+  function saveStore() {
+    localStorage.setItem("hp_pin", store.pin);
+    localStorage.setItem("hp_webhook", store.webhookUrl);
+    localStorage.setItem("hp_rosters", JSON.stringify(store.rosters));
+    localStorage.setItem("hp_logs", JSON.stringify(store.logs));
+  }
+
+  function updateSimControls() {
+    const isTimer = session.view === "TIMER";
+    document.getElementById("fwdBtn").style.display = isTimer ? "inline-block" : "none";
+    document.getElementById("graceBtn").style.display = isTimer ? "inline-block" : "none";
+    document.getElementById("overdueBtn").style.display = isTimer ? "inline-block" : "none";
+  }
+
+  function toggleSimWidth() {
+    app.classList.toggle("full-width");
+  }
+
+  function simFastForward(sec) {
+    if (session.departTime) {
+      session.departTime = new Date(session.departTime.getTime() - sec * 1000);
+    }
+  }
+
+  function simJumpGrace() {
+    if (session.departTime) {
+      session.departTime = new Date(Date.now() - (store.baseSeconds + 15) * 1000);
+    }
+  }
+
+  function simJumpOverdue() {
+    if (session.departTime) {
+      session.departTime = new Date(Date.now() - (store.graceSeconds + 15) * 1000);
+    }
+  }
+
+  function render() {
+    updateSimControls();
+
+    if (session.view === "REASON") {
+      app.innerHTML = `
+        <div class="header-tag">Screen 1 • Paso 1</div>
+        <h1 class="header-title">Select Reason / Razón</h1>
+        <p class="header-subtitle">Tap why you are leaving / Seleccione el motivo</p>
+
+        <div class="kiosk-btn btn-bath" onclick="chooseReason('Bathroom', 'Baño')">
+          <h2>Bathroom</h2>
+          <p>Baño / Sanitarios</p>
+        </div>
+
+        <div class="kiosk-btn btn-hall" onclick="chooseReason('Hallway', 'Pasillo')">
+          <h2>Hallway</h2>
+          <p>Pasillo (Agua, Casillero, Enfermería)</p>
+        </div>
+
+        <div class="kiosk-btn btn-misc" onclick="chooseReason('Miscellaneous', 'Varios')">
+          <h2>Miscellaneous</h2>
+          <p>Varios / Otra Razón</p>
+        </div>
+
+        <div style="margin-top: 26px;">
+          <button class="btn-nav" onclick="navigate('TEACHER_LOCK')">⚙️ Teacher area / Área del Maestro</button>
+        </div>
+      `;
+    } else if (session.view === "PERIOD") {
+      const pKeys = Object.keys(store.rosters).sort();
+      app.innerHTML = `
+        <div class="header-tag">Screen 2 • Paso 2</div>
+        <h1 class="header-title">Select Period / Período</h1>
+        <p class="header-subtitle">${session.reasonEn} (${session.reasonEs})</p>
+
+        <div class="period-grid">
+          ${pKeys.map(p => `
+            <div class="period-btn" onclick="choosePeriod('${p}')">
+              <h3>Period ${p} / Período ${p}</h3>
+              <p>${store.rosters[p]?.course || "Open Roster"}</p>
+            </div>
+          `).join("")}
+        </div>
+
+        <button class="btn-nav" onclick="navigate('REASON')">← Back / Regresar</button>
+      `;
+    } else if (session.view === "STUDENT") {
+      const roster = store.rosters[session.period]?.students || [];
+      app.innerHTML = `
+        <div class="header-tag">Screen 3 • Paso 3</div>
+        <h1 class="header-title">Select Name / Nombre</h1>
+        <p class="header-subtitle">Period ${session.period} • ${session.course}</p>
+
+        <input type="text" class="search-input" id="searchBox" placeholder="🔍 Search name / Buscar nombre..." oninput="filterStudents()" autofocus>
+
+        <div class="student-list" id="studentContainer">
+          ${renderStudentList(roster)}
+        </div>
+
+        <div style="margin-top: 16px;">
+          <button class="btn-nav" onclick="navigate('PERIOD')">← Back / Regresar</button>
+        </div>
+      `;
+    } else if (session.view === "TIMER") {
+      app.innerHTML = `
+        <div class="timer-screen">
+          <div id="statusBadge" class="status-badge badge-ontime">ON TIME / A TIEMPO</div>
+          <h1 style="font-size: 2.2rem; margin: 4px 0 6px 0;">${session.studentName}</h1>
+          <p style="color: var(--c-bath); font-weight: 700; margin: 0 0 4px 0; font-size: 1.1rem;">
+            ${session.reasonEn} / ${session.reasonEs}
+          </p>
+          <p style="color: var(--text-muted); margin: 0; font-size: 0.95rem;">
+            Period ${session.period} • ${session.course}
+          </p>
+
+          <div class="timer-num" id="timerCounter">05:00</div>
+
+          <button class="btn-return" onclick="handleReturn()">
+            I'M BACK<br><span style="font-size: 1.05rem; font-weight: 700;">YA REGRESÉ</span>
+          </button>
+        </div>
+      `;
+      startLiveTimer();
+    } else if (session.view === "TEACHER_LOCK") {
+      app.innerHTML = `
+        <button class="btn-nav" onclick="navigate('REASON')">← Back to Kiosk</button>
+        <h1 class="header-title" style="margin-top: 16px;">Teacher Area Security</h1>
+        <p class="header-subtitle">Enter PIN to access configuration & audit logs</p>
+
+        <div class="admin-card" style="text-align: center; padding: 24px;">
+          <input type="password" id="pinField" class="search-input" style="max-width: 220px; text-align: center; font-size: 24px; letter-spacing: 6px;" placeholder="••••" maxlength="8">
+          <div>
+            <button class="btn-teal" style="font-size: 1.1rem; padding: 12px 32px;" onclick="checkPin()">Open Portal</button>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 14px;">Default PIN is 1234. You can change it inside.</p>
+        </div>
+      `;
+    } else if (session.view === "TEACHER_PORTAL") {
+      renderTeacherPortal();
+    }
+  }
+
+  function chooseReason(en, es) {
+    session.reasonEn = en;
+    session.reasonEs = es;
+    session.view = "PERIOD";
+    render();
+  }
+
+  function choosePeriod(p) {
+    session.period = p;
+    session.course = store.rosters[p]?.course || "Math";
+    session.view = "STUDENT";
+    render();
+  }
+
+  function renderStudentList(list) {
+    if (!list || list.length === 0) {
+      return `<p style="color: var(--text-muted); padding: 10px;">No students enrolled for this period.</p>`;
+    }
+    return list.map(name => `
+      <div class="student-item" onclick="startStudentPass('${name.replace(/'/g, "\\'")}')">
+        <span>${name}</span>
+        <span style="color: var(--c-bath); font-size: 0.9rem;">Start →</span>
+      </div>
+    `).join("");
+  }
+
+  function filterStudents() {
+    const q = document.getElementById("searchBox").value.toLowerCase();
+    const all = store.rosters[session.period]?.students || [];
+    const filtered = all.filter(s => s.toLowerCase().includes(q));
+    document.getElementById("studentContainer").innerHTML = renderStudentList(filtered);
+  }
+
+  function startStudentPass(student) {
+    session.studentName = student;
+    session.departTime = new Date();
+    session.view = "TIMER";
+
+    if (store.webhookUrl) {
+      const exp = new Date(session.departTime.getTime() + store.baseSeconds * 1000);
+      const grc = new Date(session.departTime.getTime() + store.graceSeconds * 1000);
+      fetch(store.webhookUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "DEPART",
+          date: session.departTime.toLocaleDateString(),
+          period: session.period,
+          course: session.course,
+          studentName: session.studentName,
+          reason: session.reasonEn,
+          departTime: session.departTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          expectedReturn: exp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          graceLimit: grc.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        })
+      }).catch(e => console.log("Cloud sync non-fatal depart err:", e));
+    }
+
+    render();
+  }
+
+  function startLiveTimer() {
+    clearInterval(session.timerInterval);
+
+    session.timerInterval = setInterval(() => {
+      const elapsed = Math.floor((new Date() - session.departTime) / 1000);
+      const remaining = store.baseSeconds - elapsed;
+      const counter = document.getElementById("timerCounter");
+      const badge = document.getElementById("statusBadge");
+      if (!counter) return;
+
+      if (remaining >= 0) {
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        counter.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        counter.style.color = "var(--text)";
+        badge.className = "status-badge badge-ontime";
+        badge.innerText = "ON TIME / A TIEMPO";
+      } else if (elapsed <= store.graceSeconds) {
+        const graceElapsed = elapsed - store.baseSeconds;
+        const m = Math.floor(graceElapsed / 60);
+        const s = graceElapsed % 60;
+        counter.innerText = `+${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        counter.style.color = "var(--warning)";
+        badge.className = "status-badge badge-grace";
+        badge.innerText = "GRACE PERIOD / TIEMPO DE GRACIA";
+      } else {
+        const overdue = elapsed - store.graceSeconds;
+        const m = Math.floor(overdue / 60);
+        const s = overdue % 60;
+        counter.innerText = `-${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        counter.style.color = "var(--danger)";
+        badge.className = "status-badge badge-overdue";
+        badge.innerText = "OVERDUE / TARDE";
+      }
+    }, 1000);
+  }
+
+  function handleReturn() {
+    clearInterval(session.timerInterval);
+    const returnTime = new Date();
+    const elapsedSecs = Math.floor((returnTime - session.departTime) / 1000);
+    const durationMins = (elapsedSecs / 60).toFixed(2);
+
+    let status = "On Time";
+    if (elapsedSecs > store.graceSeconds) status = "Overdue";
+    else if (elapsedSecs > store.baseSeconds) status = "Within Grace";
+
+    store.logs.push({
+      timestamp: session.departTime.toLocaleDateString() + " " + session.departTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      period: session.period,
+      course: session.course,
+      studentName: session.studentName,
+      reason: session.reasonEn,
+      duration: durationMins + " min",
+      status: status
+    });
+    saveStore();
+
+    if (store.webhookUrl) {
+      fetch(store.webhookUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "RETURN",
+          studentName: session.studentName,
+          actualReturnTime: returnTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          totalMinutesOut: durationMins,
+          finalStatus: status
+        })
+      }).catch(e => console.log("Cloud sync return err:", e));
+    }
+
+    session = { view: "REASON", reasonEn: "", reasonEs: "", period: "1", course: "", studentName: "", departTime: null, timerInterval: null };
+    render();
+  }
+
+  function checkPin() {
+    const val = document.getElementById("pinField").value;
+    if (val === store.pin) {
+      session.view = "TEACHER_PORTAL";
+      render();
+    } else {
+      alert("Incorrect PIN. Please try again.");
+    }
+  }
+
+  function renderTeacherPortal() {
+    app.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 class="header-title" style="font-size: 1.5rem; margin: 0;">Teacher Area</h1>
+        <button class="btn-nav" onclick="navigate('REASON')">Exit to Kiosk</button>
+      </div>
+
+      <div class="admin-card">
+        <h3>1. Google Sheets Webhook URL (Dual Sync)</h3>
+        <p>Paste your deployed Apps Script Web App URL below:</p>
+        <input type="text" id="webhookInput" class="search-input" style="font-size: 14px; margin-bottom: 8px;" placeholder="https://script.google.com/macros/s/.../exec" value="${store.webhookUrl}">
+        <button class="btn-teal" onclick="saveWebhook()">Save URL</button>
+      </div>
+
+      <div class="admin-card">
+        <h3>2. Import Roster from Excel / CSV</h3>
+        <p>File with columns: <strong>Period, Student Name, Class</strong></p>
+        <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" onchange="importExcelFile(event)">
+        
+        <h4 style="margin: 14px 0 6px 0; color: #fff; font-size: 0.95rem;">Or paste spreadsheet cells:</h4>
+        <textarea id="pasteInput" class="admin-input" placeholder="1, Alex Rivera, College Math&#10;2, David Chen, Calculus"></textarea>
+        <div style="margin-top: 8px; display: flex; gap: 8px;">
+          <button class="btn-teal" onclick="importPastedRoster()">Import Pasted</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>3. Class Lists (Periods 1 - 5)</h3>
+        <p>Review or edit student names line-by-line:</p>
+        ${[1, 2, 3, 4, 5].map(p => `
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: var(--c-bath);">Period ${p} Subject:</label>
+            <input type="text" id="c_name_${p}" class="search-input" style="padding: 8px 12px; margin-bottom: 6px; font-size: 14px;" value="${store.rosters[p]?.course || ""}">
+            <textarea id="roster_txt_${p}" class="admin-input" style="height: 70px;">${(store.rosters[p]?.students || []).join("\n")}</textarea>
+          </div>
+        `).join("")}
+        <button class="btn-teal" onclick="saveClassLists()">Save Class Lists</button>
+      </div>
+
+      <div class="admin-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0;">4. Local Pass Log (${store.logs.length} entries)</h3>
+          <div>
+            <button class="btn-teal" style="background: var(--success); color: #000;" onclick="exportCSV()">Export CSV</button>
+            <button class="btn-nav" style="color: var(--danger); border-color: #7f1d1d;" onclick="clearLogs()">Clear</button>
+          </div>
+        </div>
+
+        <div class="log-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>Period</th>
+                <th>Student</th>
+                <th>Reason</th>
+                <th>Duration</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${store.logs.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No entries recorded yet.</td></tr>` : 
+                store.logs.slice().reverse().map(l => `
+                  <tr>
+                    <td>${l.timestamp}</td>
+                    <td>P${l.period} (${l.course})</td>
+                    <td><strong>${l.studentName}</strong></td>
+                    <td>${l.reason}</td>
+                    <td>${l.duration}</td>
+                    <td><span style="color: ${l.status === 'On Time' ? '#4ade80' : l.status === 'Overdue' ? '#f87171' : '#fde047'}; font-weight: 700;">${l.status}</span></td>
+                  </tr>
+                `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>5. Change Security PIN</h3>
+        <input type="password" id="newPin" class="search-input" style="max-width: 200px; font-size: 18px;" placeholder="New PIN">
+        <button class="btn-teal" onclick="updatePin()">Save PIN</button>
+      </div>
+    `;
+  }
+
+  function navigate(view) {
+    session.view = view;
+    render();
+  }
+
+  function saveWebhook() {
+    store.webhookUrl = document.getElementById("webhookInput").value.trim();
+    saveStore();
+    alert("Google Sheets Webhook URL saved!");
+  }
+
+  function importPastedRoster() {
+    const raw = document.getElementById("pasteInput").value.trim();
+    if (!raw) return alert("Paste box is empty.");
+
+    const lines = raw.split("\n");
+    lines.forEach(line => {
+      const parts = line.includes("\t") ? line.split("\t") : line.split(",");
+      if (parts.length >= 2) {
+        const period = parts[0].trim().replace(/\D/g, "");
+        const student = parts[1].trim();
+        const course = parts[2] ? parts[2].trim() : "";
+        if (period && store.rosters[period]) {
+          if (course) store.rosters[period].course = course;
+          if (student && !store.rosters[period].students.includes(student)) {
+            store.rosters[period].students.push(student);
+          }
+        }
+      }
+    });
+
+    saveStore();
+    alert("Pasted roster imported successfully!");
+    renderTeacherPortal();
+  }
+
+  function importExcelFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const data = new Uint8Array(evt.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+
+      rows.forEach((r, i) => {
+        if (i === 0 && isNaN(parseInt(r[0]))) return;
+        const p = String(r[0]).trim().replace(/\D/g, "");
+        const s = r[1] ? String(r[1]).trim() : "";
+        const c = r[2] ? String(r[2]).trim() : "";
+
+        if (p && store.rosters[p] && s) {
+          if (c) store.rosters[p].course = c;
+          if (!store.rosters[p].students.includes(s)) {
+            store.rosters[p].students.push(s);
+          }
+        }
+      });
+
+      saveStore();
+      alert("Excel file imported successfully!");
+      renderTeacherPortal();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function saveClassLists() {
+    for (let p = 1; p <= 5; p++) {
+      const course = document.getElementById(`c_name_${p}`).value.trim();
+      const txt = document.getElementById(`roster_txt_${p}`).value.trim();
+      const list = txt ? txt.split("\n").map(s => s.trim()).filter(Boolean) : [];
+      store.rosters[p] = { course: course, students: list };
+    }
+    saveStore();
+    alert("Class lists updated successfully.");
+  }
+
+  function exportCSV() {
+    if (store.logs.length === 0) return alert("No logs to export.");
+    let csv = "Date/Time,Period,Course,Student Name,Reason,Duration,Status\n";
+    store.logs.forEach(l => {
+      csv += `"${l.timestamp}","${l.period}","${l.course}","${l.studentName}","${l.reason}","${l.duration}","${l.status}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Hall_Pass_Log_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function clearLogs() {
+    if (confirm("Delete all logged records?")) {
+      store.logs = [];
+      saveStore();
+      renderTeacherPortal();
+    }
+  }
+
+  function updatePin() {
+    const val = document.getElementById("newPin").value.trim();
+    if (val && val.length >= 4) {
+      store.pin = val;
+      saveStore();
+      alert("PIN updated successfully.");
+      document.getElementById("newPin").value = "";
+    } else {
+      alert("PIN must be at least 4 digits.");
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
