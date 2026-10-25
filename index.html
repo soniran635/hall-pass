@@ -51,7 +51,6 @@
       overflow-x: hidden;
     }
 
-    /* Top testing / simulator controls bar */
     .sim-bar {
       width: 100%;
       max-width: 680px;
@@ -99,24 +98,23 @@
       max-width: 900px;
     }
 
-    /* Lock banner when active */
     .lockdown-indicator {
       display: none;
       position: fixed;
       top: 12px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid #059669;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid #10b981;
       color: #34d399;
-      padding: 6px 16px;
+      padding: 8px 20px;
       border-radius: 9999px;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 800;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       z-index: 100;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
     }
 
     .header-tag {
@@ -318,26 +316,28 @@
     }
     .btn-teal:active { background: #0369a1; }
 
-    .btn-lockdown {
+    /* The Prominent Green Kiosk Lockdown Button */
+    .btn-lockdown-hero {
       width: 100%;
-      background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
-      color: #fff;
-      border: none;
-      border-radius: 16px;
-      padding: 18px;
-      font-size: 1.15rem;
-      font-weight: 800;
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: #ffffff;
+      border: 2px solid #34d399;
+      border-radius: 18px;
+      padding: 20px 24px;
+      font-size: 1.25rem;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
-      margin-bottom: 20px;
+      gap: 12px;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.45);
+      margin-bottom: 22px;
+      transition: transform 0.1s ease;
     }
-    .btn-lockdown:active {
-      transform: scale(0.985);
-      filter: brightness(0.9);
+    .btn-lockdown-hero:active {
+      transform: scale(0.98);
+      filter: brightness(0.95);
     }
 
     .admin-card {
@@ -566,7 +566,6 @@
     render();
   }
 
-  // Intercept keyboard attempts to switch tabs or press Escape
   window.addEventListener("keydown", (e) => {
     if (!store.isLockdownActive) return;
 
@@ -576,14 +575,12 @@
     }
   }, true);
 
-  // Detect when a student tries to switch windows or tabs
   document.addEventListener("visibilitychange", () => {
     if (store.isLockdownActive && document.hidden) {
       triggerTamperAlert("Tab or window was unfocused / switched.");
     }
   });
 
-  // Detect exit from fullscreen
   document.addEventListener("fullscreenchange", () => {
     if (store.isLockdownActive && !document.fullscreenElement) {
       triggerTamperAlert("Fullscreen kiosk mode was exited.");
@@ -598,7 +595,6 @@
     document.getElementById("tamperPin").value = "";
     document.getElementById("tamperPin").focus();
 
-    // Log incident locally
     store.logs.push({
       timestamp: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       period: "ALERT",
@@ -610,7 +606,6 @@
     });
     saveStore();
 
-    // Send incident to Google Sheets
     if (store.webhookUrl) {
       fetch(store.webhookUrl, {
         method: "POST",
@@ -934,9 +929,9 @@
         <button class="btn-nav" onclick="navigate('REASON')">Exit to Kiosk</button>
       </div>
 
-      <!-- KIOSK LOCKDOWN LAUNCH BUTTON -->
-      <button class="btn-lockdown" onclick="enterLockdownMode()">
-        <span>🔒</span>
+      <!-- KIOSK LOCKDOWN HERO BUTTON -->
+      <button class="btn-lockdown-hero" onclick="enterLockdownMode()">
+        <span style="font-size: 1.5rem;">🔒</span>
         <span>LAUNCH KIOSK LOCKDOWN MODE</span>
       </button>
 
@@ -975,14 +970,12 @@
           </div>
         </div>
 
-        <!-- Add Period Inline -->
         <div style="background: #090d16; border: 1px dashed var(--border-focus); border-radius: 12px; padding: 12px; margin-bottom: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <input type="text" id="newPeriodKey" class="search-input" style="max-width: 130px; margin: 0; padding: 10px 12px; font-size: 14px;" placeholder="Period # (e.g. 8)">
           <input type="text" id="newPeriodCourse" class="search-input" style="flex: 1; min-width: 160px; margin: 0; padding: 10px 12px; font-size: 14px;" placeholder="Course Name (e.g. Advisory)">
           <button class="btn-teal" style="background: var(--c-bath); color: #000;" onclick="addNewPeriod()">+ Add Period</button>
         </div>
 
-        <!-- Period List Container -->
         <div id="periodRowsContainer">
           ${pKeys.map(p => `
             <div class="period-edit-row">
