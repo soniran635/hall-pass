@@ -51,6 +51,7 @@
       overflow-x: hidden;
     }
 
+    /* Top testing / simulator controls bar */
     .sim-bar {
       width: 100%;
       max-width: 680px;
@@ -96,6 +97,26 @@
 
     .kiosk-frame.full-width {
       max-width: 900px;
+    }
+
+    /* Lock banner when active */
+    .lockdown-indicator {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid #059669;
+      color: #34d399;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      z-index: 100;
     }
 
     .header-tag {
@@ -297,6 +318,28 @@
     }
     .btn-teal:active { background: #0369a1; }
 
+    .btn-lockdown {
+      width: 100%;
+      background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 18px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
+      margin-bottom: 20px;
+    }
+    .btn-lockdown:active {
+      transform: scale(0.985);
+      filter: brightness(0.9);
+    }
+
     .admin-card {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -364,14 +407,28 @@
       color: #38bdf8;
       outline: none;
     }
+
+    /* Modal for tamper or unlock prompt */
+    .tamper-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 13, 22, 0.95);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
   </style>
 </head>
 <body>
 
-<div class="sim-bar">
+<div id="lockdownIndicator" class="lockdown-indicator">🔒 Locked Kiosk Mode Active</div>
+
+<div class="sim-bar" id="simBar">
   <span style="color: #38bdf8; font-weight: 700;">Hall Pass • Kiosk Testing</span>
   <div class="sim-btn-group">
-    <button class="sim-btn" onclick="toggleSimWidth()">Toggle Layout Width</button>
+    <button class="sim-btn" onclick="toggleSimWidth()">Toggle Layout</button>
     <button class="sim-btn" id="fwdBtn" style="display: none;" onclick="simFastForward(60)">+1m</button>
     <button class="sim-btn" id="graceBtn" style="display: none;" onclick="simJumpGrace()">Test Grace</button>
     <button class="sim-btn" id="overdueBtn" style="display: none;" onclick="simJumpOverdue()">Test Overdue</button>
@@ -380,8 +437,22 @@
 
 <div class="kiosk-frame" id="app"></div>
 
+<!-- Tamper / Security Prompt Overlay -->
+<div id="tamperModal" class="tamper-overlay">
+  <div class="kiosk-frame" style="max-width: 440px; text-align: center;">
+    <div style="font-size: 3rem; margin-bottom: 8px;">🚨</div>
+    <h2 id="tamperTitle" style="margin: 0 0 6px 0; color: #ef4444; font-size: 1.6rem;">Security Alert</h2>
+    <p id="tamperMsg" style="color: var(--text-muted); margin: 0 0 16px 0; font-size: 0.9rem;">
+      Lockdown mode was interrupted. Enter Teacher PIN to resume.
+    </p>
+    <input type="password" id="tamperPin" class="search-input" style="max-width: 220px; text-align: center; font-size: 24px; letter-spacing: 6px; margin: 0 auto 14px auto;" placeholder="••••" maxlength="8">
+    <div>
+      <button class="btn-teal" style="background: #ef4444; font-size: 1.05rem; padding: 12px 28px;" onclick="verifyTamperPin()">Unlock Kiosk</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // 7 PERIODS DEFAULT
   const DEFAULT_ROSTER = {
     "1": { course: "College Math", students: ["Alex Rivera", "David Chen", "Emma Watson", "Lucas Miller", "Sarah Jenkins"] },
     "2": { course: "Calculus", students: ["Brandon Scott", "Chloe Adams", "Daniel Ortiz", "Jessica Taylor", "Noah Kim"] },
@@ -397,29 +468,20 @@
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var data = JSON.parse(e.postData.contents);
 
-    // 1. Connection Test Ping
     if (data.action === "TEST_PING") {
       sheet.appendRow([new Date().toLocaleDateString(), "TEST", "System", "Connection Test", "Ping", new Date().toLocaleTimeString(), "-", "-", "-", "Active"]);
       return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Connected!" })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 2. Student Depart
-    if (data.action === "DEPART") {
-      sheet.appendRow([
-        data.date,
-        data.period,
-        data.course,
-        data.studentName,
-        data.reason,
-        data.departTime,
-        data.expectedReturn,
-        "Out...",
-        "...",
-        "Active"
-      ]);
+    if (data.action === "TAMPER_ALERT") {
+      sheet.appendRow([new Date().toLocaleDateString(), "SECURITY", "Classroom Kiosk", "Lockdown Tamper Attempt", "Attempted to switch window / exit", new Date().toLocaleTimeString(), "-", "-", "-", "FLAGGED"]);
+      return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 3. Student Return
+    if (data.action === "DEPART") {
+      sheet.appendRow([data.date, data.period, data.course, data.studentName, data.reason, data.departTime, data.expectedReturn, "Out...", "...", "Active"]);
+    }
+
     if (data.action === "RETURN") {
       var rows = sheet.getDataRange().getValues();
       for (var i = rows.length - 1; i >= 1; i--) {
@@ -444,7 +506,8 @@
     rosters: JSON.parse(localStorage.getItem("hp_rosters")) || DEFAULT_ROSTER,
     logs: JSON.parse(localStorage.getItem("hp_logs")) || [],
     baseSeconds: 300,
-    graceSeconds: 390
+    graceSeconds: 390,
+    isLockdownActive: false
   };
 
   let session = {
@@ -475,6 +538,111 @@
       return a.localeCompare(b);
     });
   }
+
+  /* --- LOCKDOWN & TAMPER SYSTEM --- */
+  function enterLockdownMode() {
+    store.isLockdownActive = true;
+    document.getElementById("lockdownIndicator").style.display = "block";
+    document.getElementById("simBar").style.display = "none";
+
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(() => {});
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    }
+
+    session.view = "REASON";
+    render();
+  }
+
+  function exitLockdownMode() {
+    store.isLockdownActive = false;
+    document.getElementById("lockdownIndicator").style.display = "none";
+    document.getElementById("simBar").style.display = "flex";
+    if (document.exitFullscreen && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    render();
+  }
+
+  // Intercept keyboard attempts to switch tabs or press Escape
+  window.addEventListener("keydown", (e) => {
+    if (!store.isLockdownActive) return;
+
+    if (e.key === "Escape" || e.key === "F11" || (e.altKey && e.key === "Tab") || (e.metaKey && e.key === "w") || (e.ctrlKey && e.key === "t")) {
+      e.preventDefault();
+      triggerTamperAlert("Unauthorized key press detected (" + e.key + ").");
+    }
+  }, true);
+
+  // Detect when a student tries to switch windows or tabs
+  document.addEventListener("visibilitychange", () => {
+    if (store.isLockdownActive && document.hidden) {
+      triggerTamperAlert("Tab or window was unfocused / switched.");
+    }
+  });
+
+  // Detect exit from fullscreen
+  document.addEventListener("fullscreenchange", () => {
+    if (store.isLockdownActive && !document.fullscreenElement) {
+      triggerTamperAlert("Fullscreen kiosk mode was exited.");
+    }
+  });
+
+  function triggerTamperAlert(reason) {
+    const modal = document.getElementById("tamperModal");
+    modal.style.display = "flex";
+    document.getElementById("tamperTitle").innerText = "⚠️ Security Violation";
+    document.getElementById("tamperMsg").innerText = `${reason} Enter Teacher PIN to restore.`;
+    document.getElementById("tamperPin").value = "";
+    document.getElementById("tamperPin").focus();
+
+    // Log incident locally
+    store.logs.push({
+      timestamp: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      period: "ALERT",
+      course: "Security",
+      studentName: "Tamper Violation",
+      reason: reason,
+      duration: "0 min",
+      status: "FLAGGED"
+    });
+    saveStore();
+
+    // Send incident to Google Sheets
+    if (store.webhookUrl) {
+      fetch(store.webhookUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "TAMPER_ALERT" })
+      }).catch(() => {});
+    }
+  }
+
+  function verifyTamperPin() {
+    const pin = document.getElementById("tamperPin").value.trim();
+    if (pin === store.pin) {
+      document.getElementById("tamperModal").style.display = "none";
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      }
+    } else {
+      alert("Incorrect Teacher PIN.");
+    }
+  }
+
+  function promptUnlockKiosk() {
+    const pin = prompt("Enter Teacher PIN to unlock kiosk mode:");
+    if (pin === store.pin) {
+      exitLockdownMode();
+    } else if (pin !== null) {
+      alert("Incorrect PIN.");
+    }
+  }
+  /* --- END LOCKDOWN SYSTEM --- */
 
   function updateSimControls() {
     const isTimer = session.view === "TIMER";
@@ -529,8 +697,9 @@
           <p>Varios / Otra Razón</p>
         </div>
 
-        <div style="margin-top: 26px;">
+        <div style="margin-top: 26px; display: flex; justify-content: space-between; align-items: center;">
           <button class="btn-nav" onclick="navigate('TEACHER_LOCK')">⚙️ Teacher area / Área del Maestro</button>
+          ${store.isLockdownActive ? `<button class="btn-nav" style="color: #34d399; border-color: #059669;" onclick="promptUnlockKiosk()">🔓 Exit Kiosk</button>` : ""}
         </div>
       `;
     } else if (session.view === "PERIOD") {
@@ -663,7 +832,7 @@
           expectedReturn: exp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
           graceLimit: grc.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         })
-      }).catch(e => console.log("Cloud sync non-fatal depart err:", e));
+      }).catch(() => {});
     }
 
     render();
@@ -739,7 +908,7 @@
           totalMinutesOut: durationMins,
           finalStatus: status
         })
-      }).catch(e => console.log("Cloud sync return err:", e));
+      }).catch(() => {});
     }
 
     session = { view: "REASON", reasonEn: "", reasonEs: "", period: "1", course: "", studentName: "", departTime: null, timerInterval: null };
@@ -764,6 +933,12 @@
         <h1 class="header-title" style="font-size: 1.5rem; margin: 0;">Teacher Area</h1>
         <button class="btn-nav" onclick="navigate('REASON')">Exit to Kiosk</button>
       </div>
+
+      <!-- KIOSK LOCKDOWN LAUNCH BUTTON -->
+      <button class="btn-lockdown" onclick="enterLockdownMode()">
+        <span>🔒</span>
+        <span>LAUNCH KIOSK LOCKDOWN MODE</span>
+      </button>
 
       <!-- Cloud Sync & Setup Guide -->
       <div class="admin-card">
@@ -872,7 +1047,7 @@
                     <td><strong>${l.studentName}</strong></td>
                     <td>${l.reason}</td>
                     <td>${l.duration}</td>
-                    <td><span style="color: ${l.status === 'On Time' ? '#4ade80' : l.status === 'Overdue' ? '#f87171' : '#fde047'}; font-weight: 700;">${l.status}</span></td>
+                    <td><span style="color: ${l.status === 'On Time' ? '#4ade80' : l.status === 'Overdue' ? '#f87171' : l.status === 'FLAGGED' ? '#ef4444' : '#fde047'}; font-weight: 700;">${l.status}</span></td>
                   </tr>
                 `).join("")}
             </tbody>
@@ -952,13 +1127,8 @@
       return alert(`Period "${pKey}" already exists.`);
     }
 
-    // Save existing form state before adding
     syncFormInputsToStore();
-
-    store.rosters[pKey] = {
-      course: course,
-      students: []
-    };
+    store.rosters[pKey] = { course: course, students: [] };
     saveStore();
     renderTeacherPortal();
   }
