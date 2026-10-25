@@ -47,61 +47,25 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 16px) env(safe-area-inset-left, 16px);
+      padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
       overflow-x: hidden;
-    }
-
-    .sim-bar {
-      width: 100%;
-      max-width: 720px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 16px;
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      font-size: 0.85rem;
-    }
-    .sim-btn-group {
-      display: flex;
-      gap: 6px;
-    }
-    .sim-btn {
-      background: #0f172a;
-      border: 1px solid #475569;
-      color: #94a3b8;
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .sim-btn:active {
-      color: #fff;
-      border-color: #38bdf8;
     }
 
     .kiosk-frame {
       width: 100%;
-      max-width: 660px;
+      max-width: 680px;
       background: var(--card-bg);
       border: 1.5px solid var(--border);
       border-radius: 28px;
-      padding: 30px 26px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      padding: 34px 28px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
       position: relative;
-    }
-
-    .kiosk-frame.full-width {
-      max-width: 900px;
     }
 
     .lockdown-indicator {
       display: none;
       position: fixed;
-      top: 12px;
+      top: 14px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(15, 23, 42, 0.95);
@@ -127,16 +91,16 @@
     }
 
     .header-title {
-      font-size: 1.95rem;
+      font-size: 2.1rem;
       font-weight: 800;
       margin: 0 0 6px 0;
       color: var(--text);
     }
 
     .header-subtitle {
-      font-size: 1rem;
+      font-size: 1.05rem;
       color: var(--text-muted);
-      margin: 0 0 20px 0;
+      margin: 0 0 24px 0;
     }
 
     .kiosk-btn {
@@ -144,26 +108,26 @@
       background: var(--btn-base);
       border: 1.5px solid var(--border);
       border-radius: 18px;
-      padding: 18px 22px;
-      margin-bottom: 12px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
       text-align: left;
       cursor: pointer;
       transition: transform 0.1s ease, border-color 0.15s ease;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
     .kiosk-btn:active {
       transform: scale(0.985);
     }
     .kiosk-btn h2 {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       color: var(--text);
     }
     .kiosk-btn p {
       margin: 0;
-      font-size: 0.92rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
     }
 
@@ -178,7 +142,7 @@
       display: grid;
       gap: 12px;
       margin-bottom: 16px;
-      max-height: 420px;
+      max-height: 440px;
       overflow-y: auto;
       padding-right: 4px;
       -webkit-overflow-scrolling: touch;
@@ -221,7 +185,7 @@
     }
 
     .student-list {
-      max-height: 340px;
+      max-height: 360px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -247,7 +211,6 @@
       border-color: var(--border-focus);
     }
 
-    /* Multi-Pass Active Cards */
     .active-pass-card {
       background: var(--bg);
       border: 1.5px solid var(--border);
@@ -258,7 +221,6 @@
       justify-content: space-between;
       align-items: center;
       gap: 16px;
-      transition: border-color 0.2s;
     }
     .pass-info h3 {
       margin: 0 0 4px 0;
@@ -280,6 +242,20 @@
       font-variant-numeric: tabular-nums;
       margin: 2px 0;
     }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .badge-ontime { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+    .badge-grace { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid #f59e0b; }
+    .badge-overdue { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
     .btn-card-return {
       background: var(--success);
       color: #000;
@@ -415,7 +391,6 @@
     th { background: #1e293b; padding: 10px 12px; color: var(--text); font-weight: 700; position: sticky; top: 0; }
     td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
 
-    /* Modal for PIN unlock or security */
     .tamper-overlay {
       display: none;
       position: fixed;
@@ -432,17 +407,9 @@
 
 <div id="lockdownIndicator" class="lockdown-indicator">🔒 Locked Kiosk Mode Active</div>
 
-<div class="sim-bar" id="simBar">
-  <span style="color: #38bdf8; font-weight: 700;">Hall Pass • Testing Bar</span>
-  <div class="sim-btn-group">
-    <button class="sim-btn" onclick="toggleSimWidth()">Toggle Layout</button>
-    <button class="sim-btn" id="fwdBtn" style="display: none;" onclick="simFastForwardAll(60)">+1m All</button>
-  </div>
-</div>
-
 <div class="kiosk-frame" id="app"></div>
 
-<!-- Universal In-App PIN Prompt Modal (for Exit Kiosk & Tamper Recovery) -->
+<!-- Universal In-App PIN Prompt Modal -->
 <div id="pinModal" class="tamper-overlay">
   <div class="kiosk-frame" style="max-width: 440px; text-align: center;">
     <div id="pinModalIcon" style="font-size: 2.8rem; margin-bottom: 6px;">🔐</div>
@@ -471,59 +438,21 @@
     "7": { course: "Calculus Lab", students: ["Caleb Young", "Harper Wood", "Jackson White", "Kayla Hall", "Zoe Baker"] }
   };
 
-  const APPS_SCRIPT_SOURCE = `function doPost(e) {
-  try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = JSON.parse(e.postData.contents);
-
-    if (data.action === "TEST_PING") {
-      sheet.appendRow([new Date().toLocaleDateString(), "TEST", "System", "Connection Test", "Ping", new Date().toLocaleTimeString(), "-", "-", "-", "Active"]);
-      return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Connected!" })).setMimeType(ContentService.MimeType.JSON);
-    }
-
-    if (data.action === "TAMPER_ALERT") {
-      sheet.appendRow([new Date().toLocaleDateString(), "SECURITY", "Classroom Kiosk", "Lockdown Tamper Attempt", data.detail || "Attempted to exit", new Date().toLocaleTimeString(), "-", "-", "-", "FLAGGED"]);
-      return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
-    }
-
-    if (data.action === "DEPART") {
-      sheet.appendRow([data.date, data.period, data.course, data.studentName, data.reason, data.departTime, data.expectedReturn, "Out...", "...", "Active"]);
-    }
-
-    if (data.action === "RETURN") {
-      var rows = sheet.getDataRange().getValues();
-      for (var i = rows.length - 1; i >= 1; i--) {
-        if (rows[i][3] === data.studentName && rows[i][7] === "Out...") {
-          sheet.getRange(i + 1, 8).setValue(data.actualReturnTime);
-          sheet.getRange(i + 1, 9).setValue(data.totalMinutesOut);
-          sheet.getRange(i + 1, 10).setValue(data.finalStatus);
-          break;
-        }
-      }
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}`;
-
   let store = {
     pin: localStorage.getItem("hp_pin") || "1234",
     webhookUrl: localStorage.getItem("hp_webhook") || "",
     rosters: JSON.parse(localStorage.getItem("hp_rosters")) || DEFAULT_ROSTER,
     logs: JSON.parse(localStorage.getItem("hp_logs")) || [],
-    maxConcurrent: parseInt(localStorage.getItem("hp_max_passes")) || 2, // Max students out at once
+    maxConcurrent: parseInt(localStorage.getItem("hp_max_passes")) || 2,
     baseSeconds: 300,
     graceSeconds: 390,
     isLockdownActive: false
   };
 
-  // MULTI-STUDENT PASS QUEUE
-  let activePasses = []; // Array of { id, studentName, reasonEn, reasonEs, period, course, departTime }
+  let activePasses = [];
 
   let currentDraft = {
-    view: "HOME", // HOME, REASON, PERIOD, STUDENT, TEACHER_LOCK, TEACHER_PORTAL
+    view: "HOME",
     reasonEn: "",
     reasonEs: "",
     period: "1",
@@ -550,7 +479,6 @@
     });
   }
 
-  /* --- TIMER ENGINE FOR MULTIPLE PASSES --- */
   function startEngine() {
     if (globalTimerInterval) clearInterval(globalTimerInterval);
     globalTimerInterval = setInterval(() => {
@@ -603,20 +531,12 @@
     });
   }
 
-  function simFastForwardAll(sec) {
-    activePasses.forEach(p => {
-      p.departTime = new Date(p.departTime.getTime() - sec * 1000);
-    });
-    updateAllPassClocks();
-  }
-
   /* --- LOCKDOWN & TAMPER SYSTEM --- */
   let pendingModalAction = null;
 
   function enterLockdownMode() {
     store.isLockdownActive = true;
     document.getElementById("lockdownIndicator").style.display = "block";
-    document.getElementById("simBar").style.display = "none";
 
     const elem = document.documentElement;
     if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
@@ -673,7 +593,6 @@
       if (pendingModalAction === "UNLOCK_KIOSK") {
         store.isLockdownActive = false;
         document.getElementById("lockdownIndicator").style.display = "none";
-        document.getElementById("simBar").style.display = "flex";
         if (document.exitFullscreen && document.fullscreenElement) {
           document.exitFullscreen().catch(() => {});
         }
@@ -688,7 +607,7 @@
   }
 
   function closePinModal() {
-    if (pendingModalAction === "TAMPER_RECOVERY") return; // cannot cancel security siren
+    if (pendingModalAction === "TAMPER_RECOVERY") return;
     document.getElementById("pinModal").style.display = "none";
   }
 
@@ -696,7 +615,6 @@
     if (e.key === "Enter") confirmModalPin();
   }
 
-  // Intercept keyboard escapes
   window.addEventListener("keydown", (e) => {
     if (!store.isLockdownActive) return;
     if (e.key === "Escape" || e.key === "F11" || (e.altKey && e.key === "Tab") || (e.metaKey && e.key === "w") || (e.ctrlKey && e.key === "t")) {
@@ -716,19 +634,13 @@
       triggerTamperAlert("Fullscreen kiosk mode was interrupted.");
     }
   });
-  /* --- END LOCKDOWN SYSTEM --- */
 
   function render() {
-    const isTimerActive = activePasses.length > 0;
-    document.getElementById("fwdBtn").style.display = isTimerActive ? "inline-block" : "none";
-
-    // VIEW: ACTIVE PASSES LIST (MULTI-STUDENT DASHBOARD)
     if (currentDraft.view === "HOME" || (currentDraft.view === "TIMER" && activePasses.length > 0)) {
       renderActivePassesDashboard();
       return;
     }
 
-    // VIEW: REASON (PASO 1)
     if (currentDraft.view === "REASON") {
       app.innerHTML = `
         <div class="header-tag">Screen 1 • Paso 1</div>
@@ -750,13 +662,12 @@
           <p>Varios / Otra Razón</p>
         </div>
 
-        <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center;">
-          ${activePasses.length > 0 ? `<button class="btn-nav" onclick="navigate('HOME')">← View Active Passes (${activePasses.length})</button>` : `<button class="btn-nav" onclick="navigate('TEACHER_LOCK')">⚙️ Teacher area / Área del Maestro</button>`}
+        <div style="margin-top: 26px; display: flex; justify-content: space-between; align-items: center;">
+          ${activePasses.length > 0 ? `<button class="btn-nav" onclick="navigate('HOME')">← Active Passes (${activePasses.length})</button>` : `<button class="btn-nav" onclick="navigate('TEACHER_LOCK')">⚙️ Teacher area / Área del Maestro</button>`}
           ${store.isLockdownActive ? `<button class="btn-nav" style="color: #34d399; border-color: #059669;" onclick="requestUnlockKiosk()">🔓 Exit Kiosk</button>` : ""}
         </div>
       `;
     } 
-    // VIEW: PERIOD (PASO 2)
     else if (currentDraft.view === "PERIOD") {
       const pKeys = getSortedPeriodKeys();
       app.innerHTML = `
@@ -773,10 +684,9 @@
           `).join("")}
         </div>
 
-        <button class="btn-nav" onclick="navigate('REASON')">← Back / Regresar</button>
+        <button class="btn-nav" onclick="navigate('${activePasses.length > 0 ? "HOME" : "REASON"}')">← Back / Regresar</button>
       `;
     } 
-    // VIEW: STUDENT (PASO 3)
     else if (currentDraft.view === "STUDENT") {
       const roster = store.rosters[currentDraft.period]?.students || [];
       app.innerHTML = `
@@ -795,7 +705,6 @@
         </div>
       `;
     } 
-    // VIEW: TEACHER LOCK (PIN ENTRY)
     else if (currentDraft.view === "TEACHER_LOCK") {
       app.innerHTML = `
         <button class="btn-nav" onclick="navigate('${activePasses.length > 0 ? "HOME" : "REASON"}')">← Back to Kiosk</button>
@@ -807,7 +716,7 @@
           <div>
             <button class="btn-teal" style="font-size: 1.1rem; padding: 12px 32px;" onclick="checkPin()">Open Portal</button>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 14px;">Press Return / Enter on Mac or click Open Portal.</p>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 14px;">Press Return on Mac or click Open Portal.</p>
         </div>
       `;
       setTimeout(() => {
@@ -815,18 +724,16 @@
         if (f) f.focus();
       }, 50);
     } 
-    // VIEW: TEACHER PORTAL
     else if (currentDraft.view === "TEACHER_PORTAL") {
       renderTeacherPortal();
     }
   }
 
-  /* --- MULTI-PASS DASHBOARD RENDERER --- */
   function renderActivePassesDashboard() {
     const isLimitReached = activePasses.length >= store.maxConcurrent;
 
     app.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
         <span class="header-tag" style="margin: 0;">Active Passes • Salidas Activas (${activePasses.length} / ${store.maxConcurrent})</span>
         ${store.isLockdownActive ? `<button class="btn-nav" style="color: #34d399; border-color: #059669; padding: 6px 12px; font-size: 0.8rem;" onclick="requestUnlockKiosk()">🔓 Exit Kiosk</button>` : `<button class="btn-nav" style="padding: 6px 12px; font-size: 0.8rem;" onclick="navigate('TEACHER_LOCK')">⚙️ Teacher area</button>`}
       </div>
@@ -835,7 +742,7 @@
         ${activePasses.map(p => `
           <div class="active-pass-card" id="card_${p.id}">
             <div class="pass-info">
-              <span id="badge_${p.id}" class="status-badge badge-ontime" style="padding: 4px 10px; font-size: 0.75rem; margin-bottom: 6px;">ON TIME</span>
+              <span id="badge_${p.id}" class="status-badge badge-ontime">ON TIME</span>
               <h3>${p.studentName}</h3>
               <p style="color: var(--c-bath); font-weight: 700;">${p.reasonEn} / ${p.reasonEs}</p>
               <p style="font-size: 0.82rem; margin-top: 2px;">Period ${p.period} • ${p.course}</p>
@@ -905,7 +812,6 @@
   }
 
   function startStudentPass(student) {
-    // Check if student is already out
     if (activePasses.some(p => p.studentName === student)) {
       alert(`${student} is already out on an active hall pass.`);
       return;
@@ -923,7 +829,6 @@
 
     activePasses.push(newPass);
 
-    // Send DEPART event to Google Sheets
     if (store.webhookUrl) {
       const exp = new Date(newPass.departTime.getTime() + store.baseSeconds * 1000);
       fetch(store.webhookUrl, {
@@ -1015,24 +920,20 @@
         <button class="btn-nav" onclick="navigate('${activePasses.length > 0 ? "HOME" : "REASON"}')">Exit to Kiosk</button>
       </div>
 
-      <!-- KIOSK LOCKDOWN HERO BUTTON -->
       <button class="btn-lockdown-hero" onclick="enterLockdownMode()">
         <span style="font-size: 1.5rem;">🔒</span>
         <span>LAUNCH KIOSK LOCKDOWN MODE</span>
       </button>
 
-      <!-- Multi-Pass Teacher Settings -->
       <div class="admin-card">
-        <h3>1. Multi-Student Pass Limit (Teacher Control)</h3>
-        <p>Control the maximum number of students allowed out of the classroom at the same time:</p>
+        <h3>1. Multi-Student Pass Limit</h3>
+        <p>Control the maximum number of students allowed out at the same time:</p>
         <div style="display: flex; align-items: center; gap: 12px;">
           <input type="number" id="maxPassesInput" class="search-input" style="max-width: 120px; font-size: 18px; margin: 0;" min="1" max="10" value="${store.maxConcurrent}">
           <button class="btn-teal" onclick="saveMaxPasses()">Save Limit</button>
         </div>
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Students cannot change this. When limit is reached, the kiosk automatically halts checkouts until someone returns.</p>
       </div>
 
-      <!-- Google Sheets Cloud Sync -->
       <div class="admin-card">
         <h3>2. Google Sheets Webhook URL (Dual Sync)</h3>
         <p>Paste your deployed Apps Script Web App URL below:</p>
@@ -1045,7 +946,6 @@
         <div id="testPingStatus" style="font-size: 0.85rem; font-weight: 700; margin-top: 6px;"></div>
       </div>
 
-      <!-- Class Periods & Rosters -->
       <div class="admin-card">
         <h3 style="margin: 0;">3. Class Periods & Rosters (${pKeys.length} Active Periods)</h3>
         <p style="margin: 4px 0 12px 0;">Add periods, edit subject names, delete unused ones, or modify rosters:</p>
@@ -1076,13 +976,11 @@
         <button class="btn-teal" style="font-size: 1.05rem; padding: 14px 28px;" onclick="saveClassLists()">Save All Class Lists</button>
       </div>
 
-      <!-- Bulk Import -->
       <div class="admin-card">
         <h3>4. Bulk Import Rosters (Excel / CSV)</h3>
         <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" onchange="importExcelFile(event)">
       </div>
 
-      <!-- Local Log -->
       <div class="admin-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <h3 style="margin: 0;">5. Local Pass Log (${store.logs.length} entries)</h3>
@@ -1121,7 +1019,6 @@
         </div>
       </div>
 
-      <!-- Change PIN -->
       <div class="admin-card">
         <h3>6. Change Security PIN</h3>
         <input type="password" id="newPin" class="search-input" style="max-width: 200px; font-size: 18px;" placeholder="New PIN">
