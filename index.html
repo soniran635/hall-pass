@@ -159,6 +159,10 @@
       display: grid;
       gap: 12px;
       margin-bottom: 16px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch;
     }
     .period-btn {
       background: var(--btn-base);
@@ -327,6 +331,14 @@
     }
     textarea.admin-input:focus { border-color: var(--border-focus); }
 
+    .period-edit-row {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
     .log-table-wrap {
       max-height: 280px;
       overflow-y: auto;
@@ -369,12 +381,15 @@
 <div class="kiosk-frame" id="app"></div>
 
 <script>
+  // 7 PERIODS DEFAULT
   const DEFAULT_ROSTER = {
     "1": { course: "College Math", students: ["Alex Rivera", "David Chen", "Emma Watson", "Lucas Miller", "Sarah Jenkins"] },
     "2": { course: "Calculus", students: ["Brandon Scott", "Chloe Adams", "Daniel Ortiz", "Jessica Taylor", "Noah Kim"] },
     "3": { course: "College Math", students: ["Aiden Clark", "Emily Zhang", "James Wilson", "Mia Patel", "Sophia Rossi"] },
     "4": { course: "Calculus", students: ["Andrew Bell", "Grace Morales", "Jack Murphy", "Liam Nelson", "Olivia Diaz"] },
-    "5": { course: "College Math", students: ["Benjamin Lee", "Ella Flores", "Hannah Brooks", "Logan Wright", "Mason Hall"] }
+    "5": { course: "College Math", students: ["Benjamin Lee", "Ella Flores", "Hannah Brooks", "Logan Wright", "Mason Hall"] },
+    "6": { course: "Pre-Calculus", students: ["Ethan Wright", "Isabella King", "Mason Scott", "Oliver Evans", "Samantha Reed"] },
+    "7": { course: "Calculus Lab", students: ["Caleb Young", "Harper Wood", "Jackson White", "Kayla Hall", "Zoe Baker"] }
   };
 
   const APPS_SCRIPT_SOURCE = `function doPost(e) {
@@ -452,6 +467,15 @@
     localStorage.setItem("hp_logs", JSON.stringify(store.logs));
   }
 
+  function getSortedPeriodKeys() {
+    return Object.keys(store.rosters).sort((a, b) => {
+      const numA = parseInt(a, 10);
+      const numB = parseInt(b, 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return a.localeCompare(b);
+    });
+  }
+
   function updateSimControls() {
     const isTimer = session.view === "TIMER";
     document.getElementById("fwdBtn").style.display = isTimer ? "inline-block" : "none";
@@ -510,7 +534,7 @@
         </div>
       `;
     } else if (session.view === "PERIOD") {
-      const pKeys = Object.keys(store.rosters).sort();
+      const pKeys = getSortedPeriodKeys();
       app.innerHTML = `
         <div class="header-tag">Screen 2 • Paso 2</div>
         <h1 class="header-title">Select Period / Período</h1>
@@ -520,7 +544,7 @@
           ${pKeys.map(p => `
             <div class="period-btn" onclick="choosePeriod('${p}')">
               <h3>Period ${p} / Período ${p}</h3>
-              <p>${store.rosters[p]?.course || "Open Roster"}</p>
+              <p>${store.rosters[p]?.course || "Open Roster"} (${(store.rosters[p]?.students || []).length} students)</p>
             </div>
           `).join("")}
         </div>
@@ -733,6 +757,8 @@
   }
 
   function renderTeacherPortal() {
+    const pKeys = getSortedPeriodKeys();
+
     app.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h1 class="header-title" style="font-size: 1.5rem; margin: 0;">Teacher Area</h1>
@@ -765,31 +791,54 @@
         </details>
       </div>
 
+      <!-- Periods & Class Lists -->
+      <div class="admin-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div>
+            <h3 style="margin: 0;">2. Class Periods & Rosters (${pKeys.length} Active Periods)</h3>
+            <p style="margin: 4px 0 0 0;">Add periods, edit subject names, delete unused ones, or modify rosters:</p>
+          </div>
+        </div>
+
+        <!-- Add Period Inline -->
+        <div style="background: #090d16; border: 1px dashed var(--border-focus); border-radius: 12px; padding: 12px; margin-bottom: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="newPeriodKey" class="search-input" style="max-width: 130px; margin: 0; padding: 10px 12px; font-size: 14px;" placeholder="Period # (e.g. 8)">
+          <input type="text" id="newPeriodCourse" class="search-input" style="flex: 1; min-width: 160px; margin: 0; padding: 10px 12px; font-size: 14px;" placeholder="Course Name (e.g. Advisory)">
+          <button class="btn-teal" style="background: var(--c-bath); color: #000;" onclick="addNewPeriod()">+ Add Period</button>
+        </div>
+
+        <!-- Period List Container -->
+        <div id="periodRowsContainer">
+          ${pKeys.map(p => `
+            <div class="period-edit-row">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 800; color: var(--c-bath); font-size: 1.05rem;">Period ${p}</span>
+                <button class="btn-nav" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4); padding: 4px 10px; font-size: 0.8rem;" onclick="deletePeriod('${p}')">✕ Remove Period ${p}</button>
+              </div>
+
+              <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Subject / Course Title:</label>
+              <input type="text" id="c_name_${p}" class="search-input" style="padding: 10px 12px; margin-bottom: 8px; font-size: 14px;" value="${store.rosters[p]?.course || ""}">
+
+              <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Student Names (one per line):</label>
+              <textarea id="roster_txt_${p}" class="admin-input" style="height: 75px;">${(store.rosters[p]?.students || []).join("\n")}</textarea>
+            </div>
+          `).join("")}
+        </div>
+
+        <button class="btn-teal" style="font-size: 1.05rem; padding: 14px 28px;" onclick="saveClassLists()">Save All Class Lists</button>
+      </div>
+
       <!-- Import Roster -->
       <div class="admin-card">
-        <h3>2. Import Roster from Excel / CSV</h3>
-        <p>File with columns: <strong>Period, Student Name, Class</strong></p>
+        <h3>3. Bulk Import Rosters (Excel / CSV)</h3>
+        <p>Upload a spreadsheet with columns: <strong>Period, Student Name, Class</strong></p>
         <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" onchange="importExcelFile(event)">
         
         <h4 style="margin: 14px 0 6px 0; color: #fff; font-size: 0.95rem;">Or paste spreadsheet cells:</h4>
-        <textarea id="pasteInput" class="admin-input" placeholder="1, Alex Rivera, College Math&#10;2, David Chen, Calculus"></textarea>
-        <div style="margin-top: 8px; display: flex; gap: 8px;">
-          <button class="btn-teal" onclick="importPastedRoster()">Import Pasted</button>
+        <textarea id="pasteInput" class="admin-input" placeholder="1, Alex Rivera, College Math&#10;6, Ethan Wright, Pre-Calculus&#10;7, Caleb Young, Calculus Lab"></textarea>
+        <div style="margin-top: 8px;">
+          <button class="btn-teal" onclick="importPastedRoster()">Import Pasted Roster</button>
         </div>
-      </div>
-
-      <!-- Class Lists (Periods 1 - 5) -->
-      <div class="admin-card">
-        <h3>3. Class Lists (Periods 1 - 5)</h3>
-        <p>Review or edit student names line-by-line:</p>
-        ${[1, 2, 3, 4, 5].map(p => `
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.85rem; font-weight: 700; color: var(--c-bath);">Period ${p} Subject:</label>
-            <input type="text" id="c_name_${p}" class="search-input" style="padding: 8px 12px; margin-bottom: 6px; font-size: 14px;" value="${store.rosters[p]?.course || ""}">
-            <textarea id="roster_txt_${p}" class="admin-input" style="height: 70px;">${(store.rosters[p]?.students || []).join("\n")}</textarea>
-          </div>
-        `).join("")}
-        <button class="btn-teal" onclick="saveClassLists()">Save Class Lists</button>
       </div>
 
       <!-- Local Log -->
@@ -868,9 +917,7 @@
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        action: "TEST_PING"
-      })
+      body: JSON.stringify({ action: "TEST_PING" })
     })
     .then(() => {
       statusDiv.style.color = "var(--success)";
@@ -880,7 +927,7 @@
     })
     .catch((err) => {
       statusDiv.style.color = "var(--danger)";
-      statusDiv.innerText = "✗ Could not reach webhook. Please verify your deployment settings (Who has access: Anyone).";
+      statusDiv.innerText = "✗ Could not reach webhook. Please verify your deployment settings.";
       console.error(err);
     });
   }
@@ -893,6 +940,58 @@
     });
   }
 
+  function addNewPeriod() {
+    const pKey = document.getElementById("newPeriodKey").value.trim();
+    const course = document.getElementById("newPeriodCourse").value.trim() || `Period ${pKey}`;
+
+    if (!pKey) {
+      return alert("Please enter a period number or label (e.g. 8, Advisory, Homeroom).");
+    }
+
+    if (store.rosters[pKey]) {
+      return alert(`Period "${pKey}" already exists.`);
+    }
+
+    // Save existing form state before adding
+    syncFormInputsToStore();
+
+    store.rosters[pKey] = {
+      course: course,
+      students: []
+    };
+    saveStore();
+    renderTeacherPortal();
+  }
+
+  function deletePeriod(pKey) {
+    if (confirm(`Are you sure you want to remove Period ${pKey} and its roster?`)) {
+      syncFormInputsToStore();
+      delete store.rosters[pKey];
+      saveStore();
+      renderTeacherPortal();
+    }
+  }
+
+  function syncFormInputsToStore() {
+    const pKeys = Object.keys(store.rosters);
+    pKeys.forEach(p => {
+      const cEl = document.getElementById(`c_name_${p}`);
+      const rEl = document.getElementById(`roster_txt_${p}`);
+      if (cEl && rEl) {
+        const course = cEl.value.trim();
+        const txt = rEl.value.trim();
+        const list = txt ? txt.split("\n").map(s => s.trim()).filter(Boolean) : [];
+        store.rosters[p] = { course: course, students: list };
+      }
+    });
+  }
+
+  function saveClassLists() {
+    syncFormInputsToStore();
+    saveStore();
+    alert("All class periods and rosters saved successfully!");
+  }
+
   function importPastedRoster() {
     const raw = document.getElementById("pasteInput").value.trim();
     if (!raw) return alert("Paste box is empty.");
@@ -901,11 +1000,15 @@
     lines.forEach(line => {
       const parts = line.includes("\t") ? line.split("\t") : line.split(",");
       if (parts.length >= 2) {
-        const period = parts[0].trim().replace(/\D/g, "");
+        const period = parts[0].trim();
         const student = parts[1].trim();
         const course = parts[2] ? parts[2].trim() : "";
-        if (period && store.rosters[period]) {
-          if (course) store.rosters[period].course = course;
+        if (period) {
+          if (!store.rosters[period]) {
+            store.rosters[period] = { course: course || `Period ${period}`, students: [] };
+          } else if (course) {
+            store.rosters[period].course = course;
+          }
           if (student && !store.rosters[period].students.includes(student)) {
             store.rosters[period].students.push(student);
           }
@@ -930,12 +1033,16 @@
 
       rows.forEach((r, i) => {
         if (i === 0 && isNaN(parseInt(r[0]))) return;
-        const p = String(r[0]).trim().replace(/\D/g, "");
+        const p = String(r[0]).trim();
         const s = r[1] ? String(r[1]).trim() : "";
         const c = r[2] ? String(r[2]).trim() : "";
 
-        if (p && store.rosters[p] && s) {
-          if (c) store.rosters[p].course = c;
+        if (p && s) {
+          if (!store.rosters[p]) {
+            store.rosters[p] = { course: c || `Period ${p}`, students: [] };
+          } else if (c) {
+            store.rosters[p].course = c;
+          }
           if (!store.rosters[p].students.includes(s)) {
             store.rosters[p].students.push(s);
           }
@@ -947,17 +1054,6 @@
       renderTeacherPortal();
     };
     reader.readAsArrayBuffer(file);
-  }
-
-  function saveClassLists() {
-    for (let p = 1; p <= 5; p++) {
-      const course = document.getElementById(`c_name_${p}`).value.trim();
-      const txt = document.getElementById(`roster_txt_${p}`).value.trim();
-      const list = txt ? txt.split("\n").map(s => s.trim()).filter(Boolean) : [];
-      store.rosters[p] = { course: course, students: list };
-    }
-    saveStore();
-    alert("Class lists updated successfully.");
   }
 
   function exportCSV() {
