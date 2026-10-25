@@ -1,4 +1,3 @@
-cat << 'EOF' > README.md
 # Hall Pass 🎟️⏱️
 
 > A lightweight, tamper-proof, bilingual (English / Spanish) classroom kiosk web application designed for high school educators. Replaces disruptive paper hall passes with a streamlined, tablet-optimized check-out system and automated Google Sheets audit logging.
