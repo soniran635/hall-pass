@@ -338,6 +338,20 @@
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
     th { background: #1e293b; padding: 10px 12px; color: var(--text); font-weight: 700; position: sticky; top: 0; }
     td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+
+    details.guide-box {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    details.guide-box summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #38bdf8;
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -362,6 +376,52 @@
     "4": { course: "Calculus", students: ["Andrew Bell", "Grace Morales", "Jack Murphy", "Liam Nelson", "Olivia Diaz"] },
     "5": { course: "College Math", students: ["Benjamin Lee", "Ella Flores", "Hannah Brooks", "Logan Wright", "Mason Hall"] }
   };
+
+  const APPS_SCRIPT_SOURCE = `function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+
+    // 1. Connection Test Ping
+    if (data.action === "TEST_PING") {
+      sheet.appendRow([new Date().toLocaleDateString(), "TEST", "System", "Connection Test", "Ping", new Date().toLocaleTimeString(), "-", "-", "-", "Active"]);
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Connected!" })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 2. Student Depart
+    if (data.action === "DEPART") {
+      sheet.appendRow([
+        data.date,
+        data.period,
+        data.course,
+        data.studentName,
+        data.reason,
+        data.departTime,
+        data.expectedReturn,
+        "Out...",
+        "...",
+        "Active"
+      ]);
+    }
+
+    // 3. Student Return
+    if (data.action === "RETURN") {
+      var rows = sheet.getDataRange().getValues();
+      for (var i = rows.length - 1; i >= 1; i--) {
+        if (rows[i][3] === data.studentName && rows[i][7] === "Out...") {
+          sheet.getRange(i + 1, 8).setValue(data.actualReturnTime);
+          sheet.getRange(i + 1, 9).setValue(data.totalMinutesOut);
+          sheet.getRange(i + 1, 10).setValue(data.finalStatus);
+          break;
+        }
+      }
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
 
   let store = {
     pin: localStorage.getItem("hp_pin") || "1234",
@@ -567,7 +627,7 @@
       fetch(store.webhookUrl, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "DEPART",
           date: session.departTime.toLocaleDateString(),
@@ -647,7 +707,7 @@
       fetch(store.webhookUrl, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "RETURN",
           studentName: session.studentName,
@@ -679,13 +739,33 @@
         <button class="btn-nav" onclick="navigate('REASON')">Exit to Kiosk</button>
       </div>
 
+      <!-- Cloud Sync & Setup Guide -->
       <div class="admin-card">
         <h3>1. Google Sheets Webhook URL (Dual Sync)</h3>
-        <p>Paste your deployed Apps Script Web App URL below:</p>
+        <p>Paste your deployed Apps Script Web App URL below to automatically sync passes in real time:</p>
         <input type="text" id="webhookInput" class="search-input" style="font-size: 14px; margin-bottom: 8px;" placeholder="https://script.google.com/macros/s/.../exec" value="${store.webhookUrl}">
-        <button class="btn-teal" onclick="saveWebhook()">Save URL</button>
+        
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+          <button class="btn-teal" onclick="saveWebhook()">Save URL</button>
+          <button class="btn-teal" style="background: #059669;" id="testPingBtn" onclick="testWebhookConnection()">Test Connection</button>
+        </div>
+        <div id="testPingStatus" style="font-size: 0.85rem; font-weight: 700; margin-top: 6px;"></div>
+
+        <details class="guide-box">
+          <summary>📋 How to set up your Google Sheet in 60 seconds</summary>
+          <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-top: 10px;">
+            <p><strong>Step 1:</strong> Create a blank Google Sheet. In Row 1, name columns A to J: <br>
+            <code style="background: #1e293b; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px;">Date, Period, Course, Student Name, Reason, Depart Time, Expected Return, Actual Return, Duration (min), Status</code></p>
+            <p><strong>Step 2:</strong> In your Google Sheet, click <strong>Extensions > Apps Script</strong>.</p>
+            <p><strong>Step 3:</strong> Delete any code and paste the script below:
+              <button class="btn-nav" style="padding: 4px 10px; font-size: 0.75rem; margin-left: 8px;" onclick="copyAppsScript()">Copy Script Code</button>
+            </p>
+            <p><strong>Step 4:</strong> Click <strong>Deploy > New deployment</strong>. Select <strong>Web app</strong>, set <em>Execute as:</em> <strong>Me</strong>, set <em>Who has access:</em> <strong>Anyone</strong>. Click <strong>Deploy</strong> and paste the link above.</p>
+          </div>
+        </details>
       </div>
 
+      <!-- Import Roster -->
       <div class="admin-card">
         <h3>2. Import Roster from Excel / CSV</h3>
         <p>File with columns: <strong>Period, Student Name, Class</strong></p>
@@ -698,6 +778,7 @@
         </div>
       </div>
 
+      <!-- Class Lists (Periods 1 - 5) -->
       <div class="admin-card">
         <h3>3. Class Lists (Periods 1 - 5)</h3>
         <p>Review or edit student names line-by-line:</p>
@@ -711,6 +792,7 @@
         <button class="btn-teal" onclick="saveClassLists()">Save Class Lists</button>
       </div>
 
+      <!-- Local Log -->
       <div class="admin-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <h3 style="margin: 0;">4. Local Pass Log (${store.logs.length} entries)</h3>
@@ -749,6 +831,7 @@
         </div>
       </div>
 
+      <!-- Change PIN -->
       <div class="admin-card">
         <h3>5. Change Security PIN</h3>
         <input type="password" id="newPin" class="search-input" style="max-width: 200px; font-size: 18px;" placeholder="New PIN">
@@ -766,6 +849,48 @@
     store.webhookUrl = document.getElementById("webhookInput").value.trim();
     saveStore();
     alert("Google Sheets Webhook URL saved!");
+  }
+
+  function testWebhookConnection() {
+    const url = document.getElementById("webhookInput").value.trim();
+    const statusDiv = document.getElementById("testPingStatus");
+
+    if (!url) {
+      statusDiv.style.color = "var(--danger)";
+      statusDiv.innerText = "⚠️ Please paste your Google Sheets Webhook URL first.";
+      return;
+    }
+
+    statusDiv.style.color = "var(--warning)";
+    statusDiv.innerText = "⏳ Sending test ping to Google Sheet...";
+
+    fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "TEST_PING"
+      })
+    })
+    .then(() => {
+      statusDiv.style.color = "var(--success)";
+      statusDiv.innerText = "✓ Test ping sent! Check your Google Sheet to verify the new test row.";
+      store.webhookUrl = url;
+      saveStore();
+    })
+    .catch((err) => {
+      statusDiv.style.color = "var(--danger)";
+      statusDiv.innerText = "✗ Could not reach webhook. Please verify your deployment settings (Who has access: Anyone).";
+      console.error(err);
+    });
+  }
+
+  function copyAppsScript() {
+    navigator.clipboard.writeText(APPS_SCRIPT_SOURCE).then(() => {
+      alert("Apps Script code copied to clipboard! Paste it into Extensions > Apps Script in your Google Sheet.");
+    }).catch(() => {
+      prompt("Copy the code below:", APPS_SCRIPT_SOURCE);
+    });
   }
 
   function importPastedRoster() {
