@@ -451,8 +451,9 @@
 
   let activePasses = [];
 
+  // GUARANTEED LANDING SCREEN IS SCREEN 1: REASON
   let currentDraft = {
-    view: "HOME",
+    view: "REASON",
     reasonEn: "",
     reasonEs: "",
     period: "1",
@@ -636,11 +637,18 @@
   });
 
   function render() {
-    if (currentDraft.view === "HOME" || (currentDraft.view === "TIMER" && activePasses.length > 0)) {
+    // ONLY show the active passes dashboard if there are ACTIVE PASSES CURRENTLY OUT
+    if (activePasses.length > 0 && currentDraft.view === "HOME") {
       renderActivePassesDashboard();
       return;
     }
 
+    // If 0 passes exist and view is HOME, redirect strictly to Screen 1 (REASON)
+    if (activePasses.length === 0 && currentDraft.view === "HOME") {
+      currentDraft.view = "REASON";
+    }
+
+    // SCREEN 1: SELECT REASON (PASO 1)
     if (currentDraft.view === "REASON") {
       app.innerHTML = `
         <div class="header-tag">Screen 1 • Paso 1</div>
@@ -668,6 +676,7 @@
         </div>
       `;
     } 
+    // SCREEN 2: SELECT PERIOD (PASO 2)
     else if (currentDraft.view === "PERIOD") {
       const pKeys = getSortedPeriodKeys();
       app.innerHTML = `
@@ -684,9 +693,10 @@
           `).join("")}
         </div>
 
-        <button class="btn-nav" onclick="navigate('${activePasses.length > 0 ? "HOME" : "REASON"}')">← Back / Regresar</button>
+        <button class="btn-nav" onclick="navigate('REASON')">← Back / Regresar</button>
       `;
     } 
+    // SCREEN 3: SELECT NAME (PASO 3)
     else if (currentDraft.view === "STUDENT") {
       const roster = store.rosters[currentDraft.period]?.students || [];
       app.innerHTML = `
@@ -705,6 +715,7 @@
         </div>
       `;
     } 
+    // TEACHER PIN LOCK SCREEN
     else if (currentDraft.view === "TEACHER_LOCK") {
       app.innerHTML = `
         <button class="btn-nav" onclick="navigate('${activePasses.length > 0 ? "HOME" : "REASON"}')">← Back to Kiosk</button>
@@ -724,6 +735,7 @@
         if (f) f.focus();
       }, 50);
     } 
+    // TEACHER PORTAL
     else if (currentDraft.view === "TEACHER_PORTAL") {
       renderTeacherPortal();
     }
@@ -893,6 +905,7 @@
 
     activePasses.splice(index, 1);
 
+    // If 0 active passes remain, immediately switch back to Screen 1 (Reason)
     if (activePasses.length === 0) {
       currentDraft.view = "REASON";
     } else {
@@ -904,6 +917,7 @@
   function checkPin() {
     const val = document.getElementById("pinField").value.trim();
     if (val === store.pin) {
+      currentDraft.view = "TEACHAL_PORTAL";
       currentDraft.view = "TEACHER_PORTAL";
       render();
     } else {
