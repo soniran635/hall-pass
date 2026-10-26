@@ -498,8 +498,12 @@
     "7": { course: "Calculus Lab", students: ["Caleb Young", "Harper Wood", "Jackson White", "Kayla Hall", "Zoe Baker"] }
   };
 
+  // Persisted or default pin
+  const savedPin = localStorage.getItem("hp_pin");
+  const isCustomPinSet = Boolean(savedPin && savedPin !== "1234");
+
   let store = {
-    pin: localStorage.getItem("hp_pin") || "1234",
+    pin: savedPin || "1234",
     webhookUrl: localStorage.getItem("hp_webhook") || "",
     rosters: JSON.parse(localStorage.getItem("hp_rosters")) || DEFAULT_ROSTER,
     logs: JSON.parse(localStorage.getItem("hp_logs")) || [],
@@ -507,13 +511,13 @@
     baseSeconds: 300,
     graceSeconds: 390,
     isLockdownActive: false,
-    isKioskActivated: false // REQUIRES TEACHER PIN TO UNLOCK STARTUP
+    isKioskActivated: false
   };
 
   let activePasses = [];
 
   let currentDraft = {
-    view: "STARTUP_LOCK", // ALWAYS START LOCKED UNTIL TEACHER UNLOCKS
+    view: "STARTUP_LOCK",
     reasonEn: "",
     reasonEs: "",
     period: "1",
@@ -710,7 +714,7 @@
       currentDraft.view = "REASON";
       render();
     } else {
-      document.getElementById("startupPinErr").innerText = "⚠️ Incorrect Teacher PIN. Try again.";
+      document.getElementById("startupPinErr").innerText = "⚠️ Incorrect Teacher PIN for this device. Try again.";
       document.getElementById("startupPinField").value = "";
       document.getElementById("startupPinField").focus();
     }
@@ -722,9 +726,20 @@
     render();
   }
 
+  function promptResetDevicePin() {
+    const confirmation = prompt("Teacher Safety Reset:\nType 'RESET' to restore this device's PIN back to 1234:");
+    if (confirmation === "RESET") {
+      store.pin = "1234";
+      localStorage.setItem("hp_pin", "1234");
+      alert("PIN successfully restored to factory default: 1234.");
+      render();
+    }
+  }
+
   function render() {
     // 0. STARTUP GATE: UNTIL TEACHER UNLOCKS, BLOCK ALL STUDENT ENTRY
     if (!store.isKioskActivated) {
+      const isCustom = store.pin !== "1234";
       app.innerHTML = `
         <div style="text-align: center; padding: 12px 6px;">
           <div style="font-size: 3.2rem; margin-bottom: 8px;">🎟️</div>
@@ -743,8 +758,14 @@
             <button class="btn-teal" style="font-size: 1.1rem; padding: 14px 34px; margin-top: 8px; width: 100%; max-width: 260px;" onclick="unlockStartupSession()">
               Unlock Class Kiosk / Activar Kiosco
             </button>
+
+            <div style="margin-top: 18px;">
+              <button class="btn-nav" style="border: none; font-size: 0.78rem; color: #64748b; padding: 4px;" onclick="promptResetDevicePin()">Forgot / Reset Device PIN</button>
+            </div>
           </div>
-          <p style="font-size: 0.8rem; color: #475569; margin-top: 18px;">Default teacher PIN: 1234</p>
+          <p style="font-size: 0.8rem; color: #475569; margin-top: 18px;">
+            ${isCustom ? "🔒 Device-specific custom PIN active on this tablet/browser" : "Default activation PIN for new setups: 1234"}
+          </p>
         </div>
       `;
       setTimeout(() => {
@@ -982,7 +1003,6 @@
     render();
   }
 
-  /* --- RETURN & OVERDUE REASON INTERCEPTION --- */
   function initiateStudentReturn(passId) {
     const pass = activePasses.find(p => p.id === passId);
     if (!pass) return;
@@ -1084,7 +1104,7 @@
       currentDraft.view = "TEACHER_PORTAL";
       render();
     } else {
-      document.getElementById("teacherPinErr").innerText = "⚠️ Incorrect Teacher PIN. Try again.";
+      document.getElementById("teacherPinErr").innerText = "⚠️ Incorrect Teacher PIN for this device. Try again.";
       document.getElementById("pinField").value = "";
       document.getElementById("pinField").focus();
     }
@@ -1199,7 +1219,7 @@
       </div>
 
       <div class="admin-card">
-        <h3>6. Change Security PIN</h3>
+        <h3>6. Change Security PIN for this Device</h3>
         <input type="password" id="newPin" class="search-input" style="max-width: 200px; font-size: 18px;" placeholder="New PIN">
         <button class="btn-teal" onclick="updatePin()">Save PIN</button>
       </div>
@@ -1366,8 +1386,9 @@
     if (val && val.length >= 4) {
       store.pin = val;
       saveStore();
-      alert("PIN updated successfully.");
+      alert(`PIN for this specific device updated to: ${val}`);
       document.getElementById("newPin").value = "";
+      renderTeacherPortal();
     } else {
       alert("PIN must be at least 4 digits.");
     }
