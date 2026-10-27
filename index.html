@@ -17,211 +17,160 @@
       --warning: #f59e0b;
       --danger: #ef4444;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-    /* Top Kiosk Navigation Header */
     .kiosk-header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 20px;
-      background: rgba(15, 23, 42, 0.9);
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px; background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50;
     }
-    .header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .active-passes-title { font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em; color: var(--text-main); }
+    .header-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .active-passes-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
     .locked-kiosk-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid var(--success);
-      color: var(--success);
-      padding: 4px 10px;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success);
+      color: var(--success); padding: 4px 10px; border-radius: 9999px;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
     }
+    .header-actions { display: flex; gap: 8px; }
     .btn-header {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      cursor: pointer;
+      background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-color);
+      color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer;
     }
 
-    /* Main View Containers */
-    .container { max-width: 900px; margin: 0 auto; width: 100%; padding: 20px; flex: 1; display: flex; flex-direction: column; }
-    .view-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(12px); margin-bottom: 20px; }
-    h2 { font-size: 1.5rem; margin-bottom: 16px; font-weight: 700; }
-    h3 { font-size: 1.15rem; margin-bottom: 12px; color: var(--text-muted); }
+    .container { max-width: 900px; margin: 0 auto; width: 100%; padding: 16px; flex: 1; display: flex; flex-direction: column; }
+    .view-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(12px); margin-bottom: 16px; }
+    h2 { font-size: 1.4rem; margin-bottom: 12px; font-weight: 700; }
+    h3 { font-size: 1.05rem; margin-bottom: 10px; color: var(--text-muted); }
 
-    /* Button Grids & Selections */
-    .selection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 14px; }
-    .tile-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 16px;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.2s;
+    .primary-reasons-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .big-reason-btn {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 18px 20px; color: var(--text-main); text-align: left; cursor: pointer;
     }
-    .tile-btn:active { background: var(--primary); transform: scale(0.98); }
+    .big-reason-btn:active { background: var(--primary); }
+    .big-reason-title { font-size: 1.25rem; font-weight: 700; display: block; }
+    .big-reason-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; display: block; }
 
-    /* Active Passes List */
     .active-pass-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
     }
-    .timer-badge { font-size: 1.25rem; font-weight: 800; font-family: monospace; }
+    .timer-badge { font-size: 1.3rem; font-weight: 800; font-family: monospace; }
     .timer-ontime { color: var(--success); }
     .timer-overdue { color: var(--danger); }
-    .btn-return {
-      background: var(--success);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
+    .btn-return { background: var(--success); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+    .selection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+    .tile-btn {
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-color);
+      color: var(--text-main); padding: 14px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; text-align: left;
     }
+    .tile-btn:active { background: var(--primary); }
 
-    /* Forms, Inputs & Textareas */
-    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
-    input[type="text"], input[type="password"], textarea, select {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      margin-bottom: 14px;
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+    input[type="text"], input[type="password"], textarea {
+      width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color);
+      color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.95rem; margin-bottom: 12px;
     }
-    input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-success { background: var(--success); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-danger { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
 
-    /* Action Buttons */
-    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .btn-success { background: var(--success); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .btn-danger { background: var(--danger); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-
-    /* Modals */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none; align-items: center; justify-content: center;
-      z-index: 1000; padding: 16px;
+      background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
     }
     .modal-content {
-      background: var(--bg-dark);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      max-width: 600px; width: 100%;
-      padding: 24px;
-      max-height: 90vh;
-      overflow-y: auto;
+      background: var(--bg-dark); border: 1px solid var(--border-color);
+      border-radius: 12px; max-width: 600px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto;
     }
 
-    /* Logs Table */
-    .table-container { overflow-x: auto; margin-top: 10px; }
+    .table-container { overflow-x: auto; margin-top: 10px; max-height: 280px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
-    th, td { padding: 8px 12px; border-bottom: 1px solid var(--border-color); }
-    th { color: var(--text-muted); }
+    th, td { padding: 8px 10px; border-bottom: 1px solid var(--border-color); }
+    th { color: var(--text-muted); position: sticky; top: 0; background: #0f172a; }
 
-    /* Toast Notification */
     #kiosk-toast {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #1e293b; color: #f8fafc;
-      padding: 12px 20px; border-radius: 8px;
-      border: 1px solid #475569; z-index: 999999;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      display: none; font-size: 0.9rem;
+      position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #f8fafc;
+      padding: 10px 18px; border-radius: 8px; border: 1px solid #475569; z-index: 999999;
+      display: none; font-size: 0.85rem;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Persistent Status Bar -->
   <header class="kiosk-header-bar">
     <div class="header-left">
-      <span class="active-passes-title">ACTIVE PASSES • SALIDAS (<span id="active-count">0</span>/<span id="pass-limit-display">2</span>)</span>
-      <span class="locked-kiosk-badge">🔒 LOCKED KIOSK MODE ACTIVE</span>
+      <span class="active-passes-title">ACTIVE PASSES (<span id="active-count">0</span>/<span id="pass-limit-display">2</span>)</span>
+      <span id="kiosk-badge" class="locked-kiosk-badge">🔒 LOCKED KIOSK ACTIVE</span>
     </div>
-    <div style="display: flex; gap: 8px;">
+    <div class="header-actions">
+      <button class="btn-header" id="btn-toggle-kiosk" onclick="toggleKioskMode()">🔒 Lock Kiosk</button>
       <button class="btn-header" onclick="openTeacherAuth()">⚙️ Teacher Area</button>
     </div>
   </header>
 
-  <!-- Main View Container -->
   <main class="container">
-    <!-- Active Passes View -->
-    <section id="view-active-passes" class="view-card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h2>Current Hall Passes</h2>
-        <button class="btn-primary" onclick="showNewPassFlow()">+ Issue Hall Pass / Salida</button>
-      </div>
-      <div id="active-passes-list">
-        <p style="color:var(--text-muted); text-align:center; padding: 20px;">No students currently out of room.</p>
-      </div>
+    <section id="section-active-list" style="display: none; margin-bottom: 16px;">
+      <div id="active-passes-container"></div>
     </section>
 
-    <!-- Pass Creation Wizard (Hidden by default) -->
-    <section id="view-new-pass" class="view-card" style="display: none;">
-      <h2 id="wizard-step-title">Select Reason / Razón</h2>
+    <!-- 3 Clean Landing Tiles -->
+    <section id="view-landing" class="view-card">
+      <h2 style="margin-bottom: 4px;">Select Reason / Razón</h2>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Tap why you are leaving / Seleccione el motivo</p>
       
-      <!-- Step 1: Reasons -->
-      <div id="step-reasons" class="selection-grid">
-        <button class="tile-btn" onclick="selectReason('Bathroom')">🚻 Bathroom / Baño</button>
-        <button class="tile-btn" onclick="selectReason('Water')">💧 Water Fountain / Agua</button>
-        <button class="tile-btn" onclick="selectReason('Nurse')">🩹 Nurse / Enfermería</button>
-        <button class="tile-btn" onclick="selectReason('Office')">🏢 Main Office / Oficina</button>
-        <button class="tile-btn" onclick="selectReason('Other')">📌 Miscellaneous / Varios</button>
-      </div>
+      <div class="primary-reasons-grid">
+        <button class="big-reason-btn" onclick="startPassCreation('Bathroom')">
+          <span class="big-reason-title">🚻 Bathroom / Baño</span>
+          <span class="big-reason-sub">Restroom visit / Servicios higiénicos</span>
+        </button>
 
-      <!-- Step 2: Period Selection -->
-      <div id="step-periods" class="selection-grid" style="display: none;"></div>
+        <button class="big-reason-btn" onclick="startPassCreation('Hallway')">
+          <span class="big-reason-title">🚶 Hallway / Pasillo</span>
+          <span class="big-reason-sub">Water, Locker, Nurse / Agua, Casillero, Enfermería</span>
+        </button>
 
-      <!-- Step 3: Student Selection -->
-      <div id="step-students" style="display: none;">
-        <input type="text" id="student-search-input" placeholder="🔍 Search name / Buscar nombre..." oninput="filterStudentList()" />
-        <div id="students-grid" class="selection-grid"></div>
-      </div>
-
-      <div style="margin-top: 20px;">
-        <button class="btn-header" onclick="cancelPassFlow()">Cancel</button>
+        <button class="big-reason-btn" onclick="startPassCreation('Miscellaneous')">
+          <span class="big-reason-title">📌 Miscellaneous / Varios</span>
+          <span class="big-reason-sub">Office, Guidance, Other / Oficina, Otra Razón</span>
+        </button>
       </div>
     </section>
 
-    <!-- Teacher Admin Portal (Protected) -->
+    <!-- Step 2: Period Selection -->
+    <section id="view-select-period" class="view-card" style="display: none;">
+      <h2>Select Period / Período</h2>
+      <div id="period-selection-grid" class="selection-grid"></div>
+      <button class="btn-header" style="margin-top:16px;" onclick="cancelPassFlow()">Cancel</button>
+    </section>
+
+    <!-- Step 3: Student Selection -->
+    <section id="view-select-student" class="view-card" style="display: none;">
+      <h2 id="student-period-title">Select Student / Nombre</h2>
+      <input type="text" id="student-search-box" placeholder="🔍 Search name / Buscar nombre..." oninput="filterStudents()" />
+      <div id="students-selection-grid" class="selection-grid"></div>
+      <button class="btn-header" style="margin-top:16px;" onclick="cancelPassFlow()">Cancel</button>
+    </section>
+
+    <!-- Teacher Area Portal -->
     <section id="view-teacher-portal" class="view-card" style="display: none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>⚙️ Teacher Configuration & Logs</h2>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2>⚙️ Teacher Configuration & Audit Logs</h2>
         <button class="btn-header" onclick="closeTeacherPortal()">Back to Kiosk</button>
       </div>
 
-      <!-- Section 1: Sync with Google Sheets -->
-      <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
-        <h3>1. Two-Way Google Sheets Sync</h3>
+      <!-- 1. Webhook Sync & Guide -->
+      <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3>1. Two-Way Google Sheets Webhook Sync</h3>
+          <button type="button" class="btn-header" style="background:#3b82f6; color:#fff;" onclick="openGuideModal()">📖 Setup Guide</button>
+        </div>
         <label>Google Apps Script Webhook URL:</label>
         <input type="text" id="webhook-url-input" placeholder="https://script.google.com/macros/s/.../exec" />
         <div class="btn-group">
@@ -232,41 +181,61 @@
         </div>
       </div>
 
-      <!-- Section 2: Universal CSV / Text Import & Export -->
-      <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
-        <h3>2. Import / Export via Clipboard / CSV</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:10px;">Works on any Fire tablet or browser without requiring file download permissions.</p>
-        <div class="btn-group">
-          <button class="btn-header" onclick="openImportModal()">📋 Paste Rosters (CSV / Excel)</button>
-          <button class="btn-header" onclick="openExportModal()">📋 Copy Rosters to Clipboard</button>
+      <!-- 2. Security PIN & Limits -->
+      <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+        <h3>2. Teacher Security PIN & Pass Limit</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:180px;">
+            <label>Change Security PIN:</label>
+            <div style="display:flex; gap:8px;">
+              <input type="password" id="new-pin-input" placeholder="New PIN (default: 1234)" style="margin-bottom:0;" />
+              <button class="btn-primary" onclick="saveNewPin()">Save PIN</button>
+            </div>
+          </div>
+          <div style="flex:1; min-width:180px;">
+            <label>Max Simultaneous Active Passes:</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="pass-limit-input" placeholder="2" style="margin-bottom:0;" />
+              <button class="btn-primary" onclick="savePassLimit()">Save Limit</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Section 3: Class Periods & Rosters -->
-      <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-          <h3>3. Class Rosters & Subjects</h3>
+      <!-- 3. Rosters via Paste, File Upload & Edit -->
+      <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3>3. Class Periods & Student Rosters</h3>
           <button class="btn-header" onclick="addNewPeriod()">+ Add Period</button>
+        </div>
+        <div class="btn-group" style="margin-bottom:12px;">
+          <button class="btn-header" onclick="openImportModal()">📁 Import Rosters (CSV / Excel / Paste)</button>
+          <button class="btn-header" onclick="openExportModal()">📋 Copy Rosters CSV</button>
         </div>
         <div id="roster-periods-container"></div>
       </div>
 
-      <!-- Section 4: Live Pass Logs & History -->
+      <!-- 4. Audit Logs -->
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
           <h3>4. Local Pass Audit Logs (<span id="log-count">0</span> entries)</h3>
-          <button class="btn-danger" onclick="clearLocalLogs()">Clear Local Logs</button>
+          <div class="btn-group" style="margin-top:0;">
+            <button class="btn-header" onclick="downloadLogsCSV()">💾 Download CSV</button>
+            <button class="btn-header" onclick="copyLogsCSV()">📋 Copy Logs CSV</button>
+            <button class="btn-success" onclick="pushLogsToGoogleSheet()">📤 Send to Sheet</button>
+            <button class="btn-danger" onclick="clearLocalLogs()">Clear Logs</button>
+          </div>
         </div>
         <div class="table-container">
           <table id="logs-table">
             <thead>
               <tr>
-                <th>Date/Time</th>
-                <th>Period</th>
-                <th>Student</th>
+                <th onclick="sortLogs('timestamp')" style="cursor:pointer;">Date/Time ⬍</th>
+                <th onclick="sortLogs('period')" style="cursor:pointer;">Period ⬍</th>
+                <th onclick="sortLogs('studentName')" style="cursor:pointer;">Student ⬍</th>
                 <th>Reason</th>
                 <th>Duration</th>
-                <th>Status</th>
+                <th onclick="sortLogs('status')" style="cursor:pointer;">Status ⬍</th>
               </tr>
             </thead>
             <tbody id="logs-table-body"></tbody>
@@ -276,26 +245,46 @@
     </section>
   </main>
 
-  <!-- Teacher Auth Modal -->
+  <!-- Auth PIN Modal with Enter Key support -->
   <div id="auth-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width:360px; text-align:center;">
+    <div class="modal-content" style="max-width:340px; text-align:center;">
       <h3>Enter Teacher PIN</h3>
-      <input type="password" id="teacher-pin-input" maxlength="8" placeholder="••••" style="text-align:center; font-size:1.5rem; letter-spacing:4px;" />
-      <div class="btn-group" style="justify-content:center;">
-        <button class="btn-primary" onclick="verifyTeacherPin()">Unlock</button>
-        <button class="btn-header" onclick="closeAuthModal()">Cancel</button>
-      </div>
+      <form onsubmit="event.preventDefault(); verifyTeacherPin();">
+        <input type="password" id="teacher-pin-input" maxlength="8" placeholder="••••" 
+               style="text-align:center; font-size:1.6rem; letter-spacing:4px; margin: 12px 0;" 
+               onkeydown="if(event.key==='Enter') verifyTeacherPin();" />
+        <div class="btn-group" style="justify-content:center;">
+          <button type="button" class="btn-primary" onclick="verifyTeacherPin()">Unlock</button>
+          <button type="button" class="btn-header" onclick="closeAuthModal()">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- CSV Import Modal -->
+  <!-- Roster Import Modal (File Picker + Paste Textarea) -->
   <div id="import-modal" class="modal-overlay">
     <div class="modal-content">
-      <h3>Paste Roster Data (Excel / CSV)</h3>
-      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
-        Format: <code>Period,Course,Student Name</code> (one per line) or simply paste columns directly from Excel/Sheets.
+      <h3>Import Class Rosters</h3>
+      <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:10px;">
+        Choose a file from your device, or paste rows below (Format: <code>Period,Course,Student Name</code>):
       </p>
-      <textarea id="import-textarea" rows="10" placeholder="1,Calculus,Andrew Bell&#10;1,Calculus,Grace Morales&#10;2,College Math,Benjamin Lee"></textarea>
+      
+      <!-- Option A: File picker -->
+      <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:12px;">
+        <label>Option A: Choose CSV or Text File:</label>
+        <input type="file" id="roster-file-input" accept=".csv,.txt,.tsv" onchange="handleRosterFileUpload(event)" style="margin-bottom:0;" />
+      </div>
+
+      <!-- Option B: Paste area with pre-filled working template -->
+      <label>Option B: Or Paste Rows Directly:</label>
+      <textarea id="import-textarea" rows="8">1,College Math,Courtney Alexander
+1,College Math,Andrea Aviles Rojas
+1,College Math,Odalis Bombon
+2,College Math,Emanuel Aroni
+4,Calculus,Andrew Bell
+4,Calculus,Grace Morales
+5,College Math,Benjamin Lee</textarea>
+
       <div class="btn-group">
         <button class="btn-primary" onclick="processPastedRoster()">Import & Overwrite</button>
         <button class="btn-header" onclick="closeImportModal()">Cancel</button>
@@ -303,10 +292,10 @@
     </div>
   </div>
 
-  <!-- CSV Export Modal -->
+  <!-- Export Modal -->
   <div id="export-modal" class="modal-overlay">
     <div class="modal-content">
-      <h3>Copy Roster Data</h3>
+      <h3>Copy Rosters CSV</h3>
       <textarea id="export-textarea" rows="10" readonly></textarea>
       <div class="btn-group">
         <button class="btn-primary" onclick="copyExportText()">Copy to Clipboard</button>
@@ -315,11 +304,28 @@
     </div>
   </div>
 
-  <!-- Toast Notification element -->
+  <!-- Setup Guide Modal -->
+  <div id="guide-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width:560px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2>📋 Quick Teacher Setup Guide</h2>
+        <button class="btn-header" onclick="closeGuideModal()">✕</button>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Follow these steps to connect your sheet in 2 minutes:</p>
+      <ol style="margin-left:20px; font-size:0.85rem; line-height:1.6;">
+        <li>Open your Google Sheet on your computer $ightarrow$ click <strong>Extensions ➔ Apps Script</strong>.</li>
+        <li>Click <strong>Deploy ➔ New deployment</strong> $ightarrow$ Select type <strong>Web app</strong>.</li>
+        <li>Set <strong>Who has access</strong> to <strong>Anyone</strong>, then click <strong>Deploy</strong>.</li>
+        <li>Copy the Web app URL (starts with <code>https://script.google.com/macros/s/.../exec</code>).</li>
+        <li>Paste it into Section 1 on this device, tap <strong>Save URL</strong>, then tap <strong>Pull Rosters</strong>!</li>
+      </ol>
+      <button class="btn-primary" style="width:100%; margin-top:16px;" onclick="closeGuideModal()">Close Guide</button>
+    </div>
+  </div>
+
   <div id="kiosk-toast"></div>
 
   <script>
-    // --- STATE MANAGEMENT ---
     const DEFAULT_ROSTERS = {
       "1": { course: "College Math Prep", students: ["Courtney Alexander", "Andrea Aviles Rojas", "Odalis Bombon", "Emily Campos", "Jacob Cortes", "Melanie De La Cruz"] },
       "2": { course: "College Math Prep", students: ["Emanuel Aroni", "Deyna Aucancela", "David Avalos", "Anderson Baez"] },
@@ -331,19 +337,22 @@
     };
 
     let appState = {
-      pin: localStorage.getItem('teacherPin') || '2018',
+      pin: localStorage.getItem('teacherPin') || '1234',
       webhookUrl: localStorage.getItem('webhookUrl') || '',
       maxPasses: parseInt(localStorage.getItem('maxPasses') || '2', 10),
       rosters: JSON.parse(localStorage.getItem('hallPassRosters')) || DEFAULT_ROSTERS,
       activePasses: JSON.parse(localStorage.getItem('hallPassActive')) || [],
       logs: JSON.parse(localStorage.getItem('hallPassLocalLog')) || [],
-      currentWizard: { reason: '', period: '', student: '' }
+      isKioskLocked: localStorage.getItem('kioskLocked') !== 'false',
+      sortAsc: true,
+      currentWizard: { reason: '', period: '' }
     };
 
-    // --- INITIALIZATION ---
     window.onload = function() {
       document.getElementById('pass-limit-display').innerText = appState.maxPasses;
+      document.getElementById('pass-limit-input').value = appState.maxPasses;
       document.getElementById('webhook-url-input').value = appState.webhookUrl;
+      updateKioskBadge();
       renderActivePasses();
       renderTeacherRosters();
       renderLogsTable();
@@ -357,7 +366,35 @@
       setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
-    // --- TWO-WAY GOOGLE SHEETS SYNC ---
+    function updateKioskBadge() {
+      const badge = document.getElementById('kiosk-badge');
+      const toggleBtn = document.getElementById('btn-toggle-kiosk');
+      if (appState.isKioskLocked) {
+        badge.style.display = 'inline-flex';
+        toggleBtn.innerText = '🔓 Unlock Kiosk';
+      } else {
+        badge.style.display = 'none';
+        toggleBtn.innerText = '🔒 Lock Kiosk';
+      }
+    }
+
+    function toggleKioskMode() {
+      if (appState.isKioskLocked) {
+        openTeacherAuth(() => {
+          appState.isKioskLocked = false;
+          localStorage.setItem('kioskLocked', 'false');
+          updateKioskBadge();
+          showToast("Kiosk lock disabled.");
+        });
+      } else {
+        appState.isKioskLocked = true;
+        localStorage.setItem('kioskLocked', 'true');
+        updateKioskBadge();
+        showToast("Kiosk lock activated!");
+      }
+    }
+
+    // --- TWO-WAY GOOGLE SHEETS SYNC (JSONP + POST FALLBACK) ---
     function saveWebhookUrl() {
       const url = document.getElementById('webhook-url-input').value.trim();
       appState.webhookUrl = url;
@@ -370,216 +407,139 @@
       showToast("Pinging Google Sheet...");
       try {
         await fetch(appState.webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
+          method: "POST", mode: "no-cors",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "TEST_PING" })
         });
-        showToast("Ping request sent! Check your sheet for test row.");
-      } catch (err) {
-        alert("Connection error: " + err.message);
-      }
+        showToast("Ping sent! Check your sheet for test row.");
+      } catch (err) { alert("Error: " + err.message); }
     }
 
-    async function syncRostersFromGoogleSheet() {
-      if (!appState.webhookUrl) return alert("Save Webhook URL first.");
-      showToast("Reading period tabs from Google Sheet...");
-      try {
-        const res = await fetch(appState.webhookUrl);
-        const data = await res.json();
-        if (data.success && data.rosters) {
+    function syncRostersFromGoogleSheet() {
+      if (!appState.webhookUrl) return alert("Save Webhook URL first in Section 1.");
+      showToast("Pulling roster tabs from Google Sheet...");
+
+      // Use JSONP callback to avoid CORS redirect blocks
+      const callbackName = 'roster_cb_' + Date.now();
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        if (data && data.success && data.rosters) {
           appState.rosters = data.rosters;
           localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
           renderTeacherRosters();
-          showToast("Rosters successfully imported from Google Sheet!");
+          showToast("Success! All rosters pulled from Google Sheet.");
         } else {
-          alert("Error from sheet: " + (data.error || "No rosters found"));
+          alert("Error from sheet: " + (data ? data.error : "Unknown"));
         }
-      } catch (err) {
-        alert("Sync failed: " + err.message);
-      }
+      };
+
+      const script = document.createElement('script');
+      const sep = appState.webhookUrl.includes('?') ? '&' : '?';
+      script.src = appState.webhookUrl + sep + 'callback=' + callbackName;
+      script.onerror = function() {
+        // Fallback to fetch POST
+        fetch(appState.webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "GET_ROSTERS" })
+        }).then(r => r.json()).then(data => {
+          if (data.success && data.rosters) {
+            appState.rosters = data.rosters;
+            localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+            renderTeacherRosters();
+            showToast("Success! Rosters pulled from Google Sheet.");
+          }
+        }).catch(e => {
+          alert("Unable to fetch rosters. Ensure your Webhook URL is deployed with 'Anyone' access.");
+        });
+      };
+      document.body.appendChild(script);
     }
 
     async function pushLogsToGoogleSheet() {
       if (!appState.webhookUrl) return alert("Save Webhook URL first.");
-      if (appState.logs.length === 0) return alert("No logs recorded locally to push.");
-      showToast("Pushing logs to Google Sheet...");
+      if (appState.logs.length === 0) return alert("No local logs recorded to push.");
+      showToast("Pushing pass logs to Google Sheet...");
       try {
         await fetch(appState.webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
+          method: "POST", mode: "no-cors",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "SYNC_LOCAL_LOGS", entries: appState.logs })
         });
         showToast("Pass logs successfully pushed to Google Sheet!");
-      } catch (err) {
-        alert("Push failed: " + err.message);
-      }
+      } catch (err) { alert("Push failed: " + err.message); }
     }
 
-    // --- CLIPBOARD / CSV IMPORT & EXPORT ---
-    function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
-    function closeImportModal() { document.getElementById('import-modal').style.display = 'none'; }
-    function openExportModal() {
-      let csv = "Period,Course,Student Name\n";
-      for (const p in appState.rosters) {
-        const r = appState.rosters[p];
-        r.students.forEach(s => { csv += `${p},"${r.course}","${s}"\n`; });
-      }
-      document.getElementById('export-textarea').value = csv;
-      document.getElementById('export-modal').style.display = 'flex';
-    }
-    function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
-    function copyExportText() {
-      const copyText = document.getElementById("export-textarea");
-      copyText.select();
-      document.execCommand("copy");
-      showToast("Copied roster CSV to clipboard!");
+    function saveNewPin() {
+      const p = document.getElementById('new-pin-input').value.trim();
+      if (!p || p.length < 4) return alert("PIN must be at least 4 digits.");
+      appState.pin = p;
+      localStorage.setItem('teacherPin', p);
+      document.getElementById('new-pin-input').value = '';
+      showToast("Security PIN updated!");
     }
 
-    function processPastedRoster() {
-      const text = document.getElementById('import-textarea').value.trim();
-      if (!text) return alert("Paste some data first.");
-      const lines = text.split('\n');
-      const newRosters = {};
-
-      lines.forEach(line => {
-        // Support tab or comma separation
-        const parts = line.includes('\t') ? line.split('\t') : line.split(',');
-        if (parts.length >= 2) {
-          const p = parts[0].replace(/[^0-9]/g, '') || "1";
-          const course = parts.length >= 3 ? parts[1].replace(/"/g, '').trim() : `Period ${p}`;
-          const student = (parts.length >= 3 ? parts[2] : parts[1]).replace(/"/g, '').trim();
-          if (student && !/^(student|name)/i.test(student)) {
-            if (!newRosters[p]) newRosters[p] = { course, students: [] };
-            newRosters[p].students.push(student);
-          }
-        }
-      });
-
-      if (Object.keys(newRosters).length > 0) {
-        appState.rosters = newRosters;
-        localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
-        renderTeacherRosters();
-        closeImportModal();
-        showToast("Rosters successfully updated from paste!");
-      } else {
-        alert("Could not parse rows. Ensure format is: Period,Course,Student");
-      }
+    function savePassLimit() {
+      const l = parseInt(document.getElementById('pass-limit-input').value.trim(), 10);
+      if (isNaN(l) || l < 1) return alert("Limit must be at least 1.");
+      appState.maxPasses = l;
+      localStorage.setItem('maxPasses', l);
+      document.getElementById('pass-limit-display').innerText = l;
+      showToast("Active pass limit updated!");
     }
 
-    // --- ROSTER MANAGEMENT & AUTO-SAVE ---
-    function renderTeacherRosters() {
-      const container = document.getElementById('roster-periods-container');
-      container.innerHTML = '';
-      for (const p in appState.rosters) {
-        const data = appState.rosters[p];
-        const card = document.createElement('div');
-        card.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid var(--border-color); padding:14px; border-radius:10px; margin-bottom:12px;";
-        card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <strong>Period ${p}</strong>
-            <button class="btn-danger" onclick="deletePeriod('${p}')">Delete</button>
-          </div>
-          <label>Course Title:</label>
-          <input type="text" id="course-input-${p}" value="${data.course || ''}" onblur="saveSinglePeriod('${p}')" />
-          <label>Students (one per line):</label>
-          <textarea id="students-input-${p}" rows="4" onblur="saveSinglePeriod('${p}')">${(data.students || []).join('\n')}</textarea>
-          <button class="btn-header" style="font-size:0.8rem;" onclick="saveSinglePeriod('${p}')">💾 Save Period ${p}</button>
-        `;
-        container.appendChild(card);
-      }
-    }
-
-    function saveSinglePeriod(p) {
-      const course = document.getElementById(`course-input-${p}`)?.value.trim() || `Period ${p}`;
-      const text = document.getElementById(`students-input-${p}`)?.value || '';
-      const students = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-      appState.rosters[p] = { course, students };
-      localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
-      showToast(`Period ${p} saved!`);
-    }
-
-    function addNewPeriod() {
-      const nextNum = Object.keys(appState.rosters).length + 1;
-      appState.rosters[nextNum] = { course: `Period ${nextNum}`, students: [] };
-      localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
-      renderTeacherRosters();
-    }
-
-    function deletePeriod(p) {
-      if (confirm(`Delete Period ${p}?`)) {
-        delete appState.rosters[p];
-        localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
-        renderTeacherRosters();
-      }
-    }
-
-    // --- PASS CREATION WIZARD ---
-    function showNewPassFlow() {
+    // --- PASS ISSUANCE ---
+    function startPassCreation(reason) {
       if (appState.activePasses.length >= appState.maxPasses) {
-        return alert(`Maximum active passes limit (${appState.maxPasses}) reached.`);
+        return alert(`Maximum active passes limit (${appState.maxPasses}) reached. A student must return first.`);
       }
-      document.getElementById('view-active-passes').style.display = 'none';
-      document.getElementById('view-new-pass').style.display = 'block';
-      document.getElementById('step-reasons').style.display = 'grid';
-      document.getElementById('step-periods').style.display = 'none';
-      document.getElementById('step-students').style.display = 'none';
-      document.getElementById('wizard-step-title').innerText = "Select Reason / Razón";
-    }
-
-    function cancelPassFlow() {
-      document.getElementById('view-new-pass').style.display = 'none';
-      document.getElementById('view-active-passes').style.display = 'block';
-    }
-
-    function selectReason(reason) {
       appState.currentWizard.reason = reason;
-      document.getElementById('step-reasons').style.display = 'none';
-      document.getElementById('wizard-step-title').innerText = "Select Period / Período";
-      
-      const pGrid = document.getElementById('step-periods');
-      pGrid.innerHTML = '';
+      document.getElementById('view-landing').style.display = 'none';
+      document.getElementById('view-select-period').style.display = 'block';
+
+      const grid = document.getElementById('period-selection-grid');
+      grid.innerHTML = '';
       for (const p in appState.rosters) {
         const btn = document.createElement('button');
         btn.className = 'tile-btn';
         btn.innerText = `Period ${p} • ${appState.rosters[p].course}`;
         btn.onclick = () => selectPeriod(p);
-        pGrid.appendChild(btn);
+        grid.appendChild(btn);
       }
-      pGrid.style.display = 'grid';
     }
 
     function selectPeriod(p) {
       appState.currentWizard.period = p;
-      document.getElementById('step-periods').style.display = 'none';
-      document.getElementById('wizard-step-title').innerText = `Select Student (Period ${p})`;
-
-      renderStudentSelectionGrid(appState.rosters[p].students);
-      document.getElementById('step-students').style.display = 'block';
+      document.getElementById('view-select-period').style.display = 'none';
+      document.getElementById('view-select-student').style.display = 'block';
+      document.getElementById('student-period-title').innerText = `Select Student (Period ${p} • ${appState.rosters[p]?.course || ''})`;
+      renderStudentGrid(appState.rosters[p]?.students || []);
     }
 
-    function renderStudentSelectionGrid(students) {
-      const sGrid = document.getElementById('students-grid');
+    function renderStudentGrid(students) {
+      const sGrid = document.getElementById('students-selection-grid');
       sGrid.innerHTML = '';
+      if (!students || students.length === 0) {
+        sGrid.innerHTML = '<p style="color:var(--text-muted); padding:10px;">No students enrolled in this period.</p>';
+        return;
+      }
       students.forEach(student => {
         const btn = document.createElement('button');
         btn.className = 'tile-btn';
         btn.innerText = student;
-        btn.onclick = () => issuePass(student);
+        btn.onclick = () => confirmIssuePass(student);
         sGrid.appendChild(btn);
       });
     }
 
-    function filterStudentList() {
-      const query = document.getElementById('student-search-input').value.toLowerCase();
+    function filterStudents() {
+      const q = document.getElementById('student-search-box').value.toLowerCase();
       const p = appState.currentWizard.period;
       const all = appState.rosters[p]?.students || [];
-      const filtered = all.filter(s => s.toLowerCase().includes(query));
-      renderStudentSelectionGrid(filtered);
+      renderStudentGrid(all.filter(s => s.toLowerCase().includes(q)));
     }
 
-    function issuePass(student) {
+    function confirmIssuePass(student) {
       const p = appState.currentWizard.period;
       const course = appState.rosters[p]?.course || `Period ${p}`;
       const now = new Date();
@@ -597,11 +557,9 @@
       appState.activePasses.push(pass);
       localStorage.setItem('hallPassActive', JSON.stringify(appState.activePasses));
 
-      // Live Post to Google Sheets if connected
       if (appState.webhookUrl) {
         fetch(appState.webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
+          method: "POST", mode: "no-cors",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "DEPART",
@@ -620,6 +578,13 @@
       renderActivePasses();
     }
 
+    function cancelPassFlow() {
+      document.getElementById('student-search-box').value = '';
+      document.getElementById('view-select-period').style.display = 'none';
+      document.getElementById('view-select-student').style.display = 'none';
+      document.getElementById('view-landing').style.display = 'block';
+    }
+
     function markStudentBack(passId) {
       const idx = appState.activePasses.findIndex(p => p.id === passId);
       if (idx === -1) return;
@@ -629,6 +594,7 @@
       const isOverdue = minutesOut > pass.graceMinutes;
 
       const logEntry = {
+        timestamp: now.getTime(),
         date: now.toLocaleDateString(),
         period: pass.period,
         course: pass.course,
@@ -643,11 +609,9 @@
       appState.logs.unshift(logEntry);
       localStorage.setItem('hallPassLocalLog', JSON.stringify(appState.logs));
 
-      // Realtime Return post to Google Sheet
       if (appState.webhookUrl) {
         fetch(appState.webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
+          method: "POST", mode: "no-cors",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "RETURN",
@@ -667,12 +631,17 @@
     }
 
     function renderActivePasses() {
-      const container = document.getElementById('active-passes-list');
+      const sec = document.getElementById('section-active-list');
+      const container = document.getElementById('active-passes-container');
       document.getElementById('active-count').innerText = appState.activePasses.length;
+
       if (appState.activePasses.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 20px;">No students currently out of room.</p>';
+        sec.style.display = 'none';
+        container.innerHTML = '';
         return;
       }
+
+      sec.style.display = 'block';
       container.innerHTML = '';
       appState.activePasses.forEach(pass => {
         const card = document.createElement('div');
@@ -683,7 +652,7 @@
             <div style="color:var(--text-muted); font-size:0.85rem;">${pass.reason} • Period ${pass.period} (${pass.course})</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Departed: ${pass.departTime}</div>
           </div>
-          <div style="display:flex; align-items:center; gap:16px;">
+          <div style="display:flex; align-items:center; gap:12px;">
             <div id="timer-${pass.id}" class="timer-badge timer-ontime">05:00</div>
             <button class="btn-return" onclick="markStudentBack('${pass.id}')">I'M BACK / REGRESÉ</button>
           </div>
@@ -715,6 +684,96 @@
       });
     }
 
+    // --- ROSTER MANAGEMENT ---
+    function renderTeacherRosters() {
+      const container = document.getElementById('roster-periods-container');
+      container.innerHTML = '';
+      for (const p in appState.rosters) {
+        const data = appState.rosters[p];
+        const card = document.createElement('div');
+        card.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid var(--border-color); padding:12px; border-radius:10px; margin-bottom:10px;";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong>Period ${p}</strong>
+            <button class="btn-danger" onclick="deletePeriod('${p}')">Delete</button>
+          </div>
+          <label>Course Title:</label>
+          <input type="text" id="course-input-${p}" value="${data.course || ''}" onblur="saveSinglePeriod('${p}')" />
+          <label>Students (one per line):</label>
+          <textarea id="students-input-${p}" rows="3" onblur="saveSinglePeriod('${p}')">${(data.students || []).join('\n')}</textarea>
+          <button class="btn-header" style="font-size:0.75rem;" onclick="saveSinglePeriod('${p}')">💾 Save Period ${p}</button>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    function saveSinglePeriod(p) {
+      const course = document.getElementById(`course-input-${p}`)?.value.trim() || `Period ${p}`;
+      const text = document.getElementById(`students-input-${p}`)?.value || '';
+      const students = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      appState.rosters[p] = { course, students };
+      localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+      showToast(`Period ${p} saved!`);
+    }
+
+    function addNewPeriod() {
+      const p = Object.keys(appState.rosters).length + 1;
+      appState.rosters[p] = { course: `Period ${p}`, students: [] };
+      localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+      renderTeacherRosters();
+    }
+
+    function deletePeriod(p) {
+      if (confirm(`Delete Period ${p}?`)) {
+        delete appState.rosters[p];
+        localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+        renderTeacherRosters();
+      }
+    }
+
+    // --- LOGS CSV & TABLE ---
+    function generateLogsCSV() {
+      let csv = "Date,Time,Period,Course,Student Name,Reason,Duration,Status\n";
+      appState.logs.forEach(l => {
+        csv += `"${l.date}","${l.departTime}","${l.period}","${l.course || ''}","${l.studentName}","${l.reason}","${l.totalMinutesOut}","${l.status}"\n`;
+      });
+      return csv;
+    }
+
+    function downloadLogsCSV() {
+      if (appState.logs.length === 0) return alert("No logs to download.");
+      const csv = generateLogsCSV();
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `HallPass_Logs_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("CSV downloaded!");
+    }
+
+    function copyLogsCSV() {
+      if (appState.logs.length === 0) return alert("No logs to copy.");
+      const csv = generateLogsCSV();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(csv).then(() => showToast("Logs copied to clipboard!"));
+      } else {
+        prompt("Copy CSV logs below:", csv);
+      }
+    }
+
+    function sortLogs(col) {
+      appState.sortAsc = !appState.sortAsc;
+      appState.logs.sort((a, b) => {
+        let valA = a[col] || '';
+        let valB = b[col] || '';
+        return appState.sortAsc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+      });
+      renderLogsTable();
+    }
+
     function renderLogsTable() {
       const tbody = document.getElementById('logs-table-body');
       document.getElementById('log-count').innerText = appState.logs.length;
@@ -724,7 +783,7 @@
         tr.innerHTML = `
           <td>${log.date} ${log.departTime}</td>
           <td>P${log.period}</td>
-          <td>${log.studentName}</td>
+          <td><strong>${log.studentName}</strong></td>
           <td>${log.reason}</td>
           <td>${log.totalMinutesOut}</td>
           <td style="color:${log.status==='ON TIME'?'var(--success)':'var(--danger)'}; font-weight:700;">${log.status}</td>
@@ -734,81 +793,105 @@
     }
 
     function clearLocalLogs() {
-      if (confirm("Clear local audit logs? (Cloud Google Sheet will keep its copies)")) {
+      if (confirm("Clear local logs on this device? (Google Sheet keeps its copies)")) {
         appState.logs = [];
         localStorage.setItem('hallPassLocalLog', JSON.stringify([]));
         renderLogsTable();
       }
     }
 
-    // --- AUTH MODAL ---
-    function openTeacherAuth() { document.getElementById('auth-modal').style.display = 'flex'; }
+    // --- MODALS & FILE IMPORT ---
+    function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
+    function closeImportModal() { document.getElementById('import-modal').style.display = 'none'; }
+    function openExportModal() {
+      let csv = "Period,Course,Student Name\n";
+      for (const p in appState.rosters) {
+        const r = appState.rosters[p];
+        r.students.forEach(s => { csv += `${p},"${r.course}","${s}"\n`; });
+      }
+      document.getElementById('export-textarea').value = csv;
+      document.getElementById('export-modal').style.display = 'flex';
+    }
+    function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
+    function openGuideModal() { document.getElementById('guide-modal').style.display = 'flex'; }
+    function closeGuideModal() { document.getElementById('guide-modal').style.display = 'none'; }
+
+    function copyExportText() {
+      const txt = document.getElementById("export-textarea");
+      txt.select();
+      document.execCommand("copy");
+      showToast("Copied rosters to clipboard!");
+    }
+
+    function handleRosterFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('import-textarea').value = e.target.result;
+        showToast("File content loaded into text box!");
+      };
+      reader.readAsText(file);
+    }
+
+    function processPastedRoster() {
+      const text = document.getElementById('import-textarea').value.trim();
+      if (!text) return alert("Please paste or upload roster rows first.");
+      const lines = text.split('\n');
+      const newRosters = {};
+      lines.forEach(line => {
+        const parts = line.includes('\t') ? line.split('\t') : line.split(',');
+        if (parts.length >= 2) {
+          const p = parts[0].replace(/[^0-9]/g, '') || "1";
+          const course = parts.length >= 3 ? parts[1].replace(/"/g, '').trim() : `Period ${p}`;
+          const student = (parts.length >= 3 ? parts[2] : parts[1]).replace(/"/g, '').trim();
+          if (student && !/^(student|name)/i.test(student)) {
+            if (!newRosters[p]) newRosters[p] = { course, students: [] };
+            newRosters[p].students.push(student);
+          }
+        }
+      });
+      if (Object.keys(newRosters).length > 0) {
+        appState.rosters = newRosters;
+        localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+        renderTeacherRosters();
+        closeImportModal();
+        showToast("Rosters updated successfully!");
+      } else {
+        alert("Could not parse rows. Ensure lines are formatted: Period,Course,Student Name");
+      }
+    }
+
+    let authSuccessCallback = null;
+    function openTeacherAuth(onSuccess) {
+      authSuccessCallback = onSuccess || null;
+      document.getElementById('auth-modal').style.display = 'flex';
+      const pinInput = document.getElementById('teacher-pin-input');
+      pinInput.value = '';
+      setTimeout(() => pinInput.focus(), 150);
+    }
     function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
     function verifyTeacherPin() {
       const input = document.getElementById('teacher-pin-input').value;
       if (input === appState.pin) {
         closeAuthModal();
-        document.getElementById('teacher-pin-input').value = '';
-        document.getElementById('view-active-passes').style.display = 'none';
-        document.getElementById('view-new-pass').style.display = 'none';
-        document.getElementById('view-teacher-portal').style.display = 'block';
+        if (authSuccessCallback) {
+          authSuccessCallback();
+          authSuccessCallback = null;
+        } else {
+          document.getElementById('view-landing').style.display = 'none';
+          document.getElementById('view-select-period').style.display = 'none';
+          document.getElementById('view-select-student').style.display = 'none';
+          document.getElementById('view-teacher-portal').style.display = 'block';
+        }
       } else {
         alert("Incorrect PIN");
       }
     }
     function closeTeacherPortal() {
       document.getElementById('view-teacher-portal').style.display = 'none';
-      document.getElementById('view-active-passes').style.display = 'block';
+      document.getElementById('view-landing').style.display = 'block';
     }
   </script>
-
-  <!-- Non-Tech Teacher Setup Guide Modal -->
-  <div id="guide-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width:580px; text-align:left;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h2 style="margin:0; font-size:1.3rem;">📋 Quick Google Sheets Setup Guide</h2>
-        <button class="btn-header" onclick="closeGuideModal()">✕ Close</button>
-      </div>
-      
-      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:14px;">
-        Follow these 3 simple steps to connect this tablet directly to your personal Google Sheet. No coding required!
-      </p>
-
-      <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:12px;">
-        <strong style="color:var(--primary); font-size:1rem;">Step 1: Open Your Sheet & Apps Script</strong>
-        <p style="font-size:0.85rem; margin-top:6px; color:var(--text-main);">
-          1. Open your <strong>Hall-Pass Google Sheet</strong> on your computer.<br>
-          2. In the top menu bar, click <strong>Extensions ➔ Apps Script</strong>.
-        </p>
-      </div>
-
-      <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:12px;">
-        <strong style="color:var(--primary); font-size:1rem;">Step 2: Deploy Your Webhook Link</strong>
-        <p style="font-size:0.85rem; margin-top:6px; color:var(--text-main);">
-          1. In the Apps Script tab, click the blue <strong>Deploy</strong> button (top-right) ➔ <strong>New deployment</strong>.<br>
-          2. Click the gear icon next to "Select type" and choose <strong>Web app</strong>.<br>
-          3. Change <strong>Who has access</strong> to <strong>Anyone</strong> (this allows the tablet to securely log passes without asking students to log in).<br>
-          4. Click <strong>Deploy</strong> and copy the <strong>Web app URL</strong> (it starts with <code>https://script.google.com/macros/s/.../exec</code>).
-        </p>
-      </div>
-
-      <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:16px;">
-        <strong style="color:var(--primary); font-size:1rem;">Step 3: Connect to Tablet</strong>
-        <p style="font-size:0.85rem; margin-top:6px; color:var(--text-main);">
-          1. Paste that URL into the box below and tap <strong>Save URL</strong>.<br>
-          2. Tap <strong>📥 Pull Rosters from Sheet</strong>. Your periods and student names will instantly sync over Wi-Fi!<br>
-          <em style="color:var(--warning); font-size:0.8rem;">Note: Avoid link shorteners (like tinyurl) because browsers block their automatic security redirects. Use the full script.google.com URL.</em>
-        </p>
-      </div>
-
-      <button class="btn-primary" style="width:100%;" onclick="closeGuideModal()">Got it, let's sync!</button>
-    </div>
-  </div>
-
-  <script>
-    function openGuideModal() { document.getElementById('guide-modal').style.display = 'flex'; }
-    function closeGuideModal() { document.getElementById('guide-modal').style.display = 'none'; }
-  </script>
-
 </body>
 </html>
