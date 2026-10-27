@@ -528,7 +528,14 @@ ightarrow$ Select type <strong>Web app</strong>.</li>
       students.forEach(student => {
         const btn = document.createElement('button');
         btn.className = 'tile-btn';
-        btn.innerText = student;
+        const isOut = appState.activePasses.some(p => p.studentName.toLowerCase() === student.toLowerCase());
+        if (isOut) {
+          btn.innerText = student + " (OUT)";
+          btn.style.opacity = "0.5";
+          btn.style.borderColor = "var(--danger)";
+        } else {
+          btn.innerText = student;
+        }
         btn.onclick = () => confirmIssuePass(student);
         sGrid.appendChild(btn);
       });
@@ -542,6 +549,12 @@ ightarrow$ Select type <strong>Web app</strong>.</li>
     }
 
     function confirmIssuePass(student) {
+      // Check if student already has an active pass out
+      const alreadyOut = appState.activePasses.find(p => p.studentName.toLowerCase() === student.toLowerCase());
+      if (alreadyOut) {
+        alert(`${student} already has an active pass out for ${alreadyOut.reason}! They must return first.`);
+        return;
+      }
       const p = appState.currentWizard.period;
       const course = appState.rosters[p]?.course || `Period ${p}`;
       const now = new Date();
