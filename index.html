@@ -2,1511 +2,764 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#090d16">
-  <title>Hall Pass</title>
-  
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Classroom Hall Pass Kiosk</title>
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: #0f172a;
-      --border: #1e293b;
-      --border-focus: #38bdf8;
-      --text: #f8fafc;
+      --bg-dark: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --btn-base: #1e293b;
-      --c-bath: #38bdf8;
-      --c-hall: #818cf8;
-      --c-misc: #c084fc;
-      --success: #22c55e;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
     }
 
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-      touch-action: manipulation;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      min-height: 100dvh;
-      min-height: -webkit-fill-available;
-      background: var(--bg);
-      color: var(--text);
+    /* Top Kiosk Navigation Header */
+    .kiosk-header-bar {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
-      overflow-x: hidden;
-    }
-
-    .kiosk-frame {
-      width: 100%;
-      max-width: 680px;
-      background: var(--card-bg);
-      border: 1.5px solid var(--border);
-      border-radius: 28px;
-      padding: 34px 28px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-      position: relative;
-    }
-
-    .lockdown-indicator {
-      display: none;
-      position: fixed;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.95);
-      border: 1.5px solid #10b981;
-      color: #34d399;
-      padding: 6px 18px;
-      border-radius: 9999px;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      z-index: 100;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-    }
-
-    .header-tag {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 4px;
-    }
-
-    .header-title {
-      font-size: 2.1rem;
-      font-weight: 800;
-      margin: 0 0 6px 0;
-      color: var(--text);
-    }
-
-    .header-subtitle {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-      margin: 0 0 24px 0;
-    }
-
-    .kiosk-btn {
-      width: 100%;
-      background: var(--btn-base);
-      border: 1.5px solid var(--border);
-      border-radius: 18px;
-      padding: 20px 24px;
-      margin-bottom: 14px;
-      text-align: left;
-      cursor: pointer;
-      transition: transform 0.1s ease, border-color 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .kiosk-btn:active {
-      transform: scale(0.985);
-    }
-    .kiosk-btn h2 {
-      margin: 0;
-      font-size: 1.45rem;
-      color: var(--text);
-    }
-    .kiosk-btn p {
-      margin: 0;
-      font-size: 0.95rem;
-      color: var(--text-muted);
-    }
-
-    .btn-bath { border-color: var(--c-bath); }
-    .btn-bath:active { background: rgba(56, 189, 248, 0.1); }
-    .btn-hall { border-color: var(--c-hall); }
-    .btn-hall:active { background: rgba(129, 140, 248, 0.1); }
-    .btn-misc { border-color: var(--c-misc); }
-    .btn-misc:active { background: rgba(192, 132, 252, 0.1); }
-
-    .period-grid {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 16px;
-      max-height: 440px;
-      overflow-y: auto;
-      padding-right: 4px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .period-btn {
-      background: var(--btn-base);
-      border: 1.5px solid var(--border-focus);
-      border-radius: 14px;
-      padding: 16px 20px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .period-btn:active {
-      transform: scale(0.985);
-      background: rgba(56, 189, 248, 0.15);
-    }
-    .period-btn h3 {
-      margin: 0;
-      font-size: 1.25rem;
-      color: var(--text);
-    }
-    .period-btn p {
-      margin: 4px 0 0 0;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .search-input {
-      width: 100%;
-      background: var(--bg);
-      border: 1.5px solid var(--border-focus);
-      border-radius: 14px;
-      padding: 16px;
-      font-size: 17px;
-      color: #fff;
-      outline: none;
-      margin-bottom: 14px;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    .student-list {
-      max-height: 360px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding-right: 4px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .student-item {
-      background: var(--btn-base);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--text);
-      cursor: pointer;
-      display: flex;
       justify-content: space-between;
+      padding: 12px 20px;
+      background: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .active-passes-title { font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em; color: var(--text-main); }
+    .locked-kiosk-badge {
+      display: inline-flex;
       align-items: center;
-    }
-    .student-item:active {
-      background: rgba(56, 189, 248, 0.15);
-      border-color: var(--border-focus);
-    }
-
-    .active-pass-card {
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: 20px;
-      padding: 18px 20px;
-      margin-bottom: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-    }
-    .pass-info h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.35rem;
-      color: #fff;
-    }
-    .pass-info p {
-      margin: 0;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-    .pass-timer-box {
-      text-align: right;
-      min-width: 125px;
-    }
-    .pass-clock {
-      font-size: 2.2rem;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      margin: 2px 0;
-    }
-    .status-badge {
-      display: inline-block;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
       padding: 4px 10px;
       border-radius: 9999px;
       font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.05em;
+      font-weight: 700;
       text-transform: uppercase;
-      margin-bottom: 6px;
     }
-    .badge-ontime { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
-    .badge-grace { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid #f59e0b; }
-    .badge-overdue { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
-
-    .btn-card-return {
-      background: var(--success);
-      color: #000;
-      border: none;
-      border-radius: 12px;
-      padding: 10px 18px;
-      font-size: 0.95rem;
-      font-weight: 800;
+    .btn-header {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
       cursor: pointer;
-      margin-top: 6px;
-    }
-    .btn-card-return:active {
-      transform: scale(0.97);
-      background: #16a34a;
     }
 
-    .btn-add-pass {
-      width: 100%;
-      background: rgba(56, 189, 248, 0.1);
-      border: 1.5px dashed var(--c-bath);
-      color: var(--c-bath);
-      border-radius: 18px;
+    /* Main View Containers */
+    .container { max-width: 900px; margin: 0 auto; width: 100%; padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .view-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(12px); margin-bottom: 20px; }
+    h2 { font-size: 1.5rem; margin-bottom: 16px; font-weight: 700; }
+    h3 { font-size: 1.15rem; margin-bottom: 12px; color: var(--text-muted); }
+
+    /* Button Grids & Selections */
+    .selection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 14px; }
+    .tile-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
       padding: 16px;
-      font-size: 1.15rem;
-      font-weight: 800;
-      cursor: pointer;
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn-add-pass:active {
-      background: rgba(56, 189, 248, 0.2);
-      transform: scale(0.985);
-    }
-
-    .btn-nav {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      border-radius: 12px;
-      padding: 12px 18px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .btn-nav:active {
-      color: var(--text);
-      border-color: #64748b;
-    }
-
-    .btn-teal {
-      background: #0284c7;
-      color: #fff;
-      border: none;
       border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .btn-teal:active { background: #0369a1; }
-
-    .btn-lockdown-hero {
-      width: 100%;
-      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-      color: #ffffff;
-      border: 2px solid #34d399;
-      border-radius: 18px;
-      padding: 18px 24px;
-      font-size: 1.2rem;
-      font-weight: 900;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.45);
-      margin-bottom: 20px;
-    }
-
-    .inline-error {
-      color: #f87171;
-      font-size: 0.9rem;
-      font-weight: 700;
-      margin-top: 8px;
-      min-height: 20px;
-    }
-
-    .admin-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 18px;
-    }
-    .admin-card h3 {
-      margin: 0 0 6px 0;
-      font-size: 1.1rem;
-      color: var(--c-bath);
-    }
-    .admin-card p {
-      margin: 0 0 10px 0;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    textarea.admin-input {
-      width: 100%;
-      height: 90px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: #fff;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 16px;
-      font-family: monospace;
-      outline: none;
-      resize: vertical;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    .period-edit-row {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-
-    .log-table-wrap {
-      max-height: 280px;
-      overflow-y: auto;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-top: 10px;
-      -webkit-overflow-scrolling: touch;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
-    th { background: #1e293b; padding: 10px 12px; color: var(--text); font-weight: 700; position: sticky; top: 0; }
-    td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
-
-    .tamper-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(9, 13, 22, 0.96);
-      z-index: 999;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
-    }
-
-    .quick-chip {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #cbd5e1;
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 0.85rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       text-align: left;
+      transition: all 0.2s;
     }
-    .quick-chip:active, .quick-chip.selected {
-      background: rgba(56, 189, 248, 0.2);
-      border-color: #38bdf8;
-      color: #fff;
-    }
-  
-.locked-kiosk-badge {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  background: rgba(34, 197, 94, 0.2) !important;
-  border: 1px solid #22c55e !important;
-  color: #22c55e !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.75rem !important;
-  font-weight: 700 !important;
-  text-transform: uppercase !important;
-  margin-left: 12px !important;
-  vertical-align: middle !important;
-  position: static !important;
-  transform: none !important;
-}
-.kiosk-header-bar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  width: 100% !important;
-  padding: 8px 16px !important;
-  box-sizing: border-box !important;
-}
+    .tile-btn:active { background: var(--primary); transform: scale(0.98); }
 
-</style>
+    /* Active Passes List */
+    .active-pass-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .timer-badge { font-size: 1.25rem; font-weight: 800; font-family: monospace; }
+    .timer-ontime { color: var(--success); }
+    .timer-overdue { color: var(--danger); }
+    .btn-return {
+      background: var(--success);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Forms, Inputs & Textareas */
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    input[type="text"], input[type="password"], textarea, select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+
+    /* Action Buttons */
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-success { background: var(--success); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-danger { background: var(--danger); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 16px;
+    }
+    .modal-content {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      max-width: 600px; width: 100%;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Logs Table */
+    .table-container { overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid var(--border-color); }
+    th { color: var(--text-muted); }
+
+    /* Toast Notification */
+    #kiosk-toast {
+      position: fixed; bottom: 20px; right: 20px;
+      background: #1e293b; color: #f8fafc;
+      padding: 12px 20px; border-radius: 8px;
+      border: 1px solid #475569; z-index: 999999;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: none; font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
 
-<div id="lockdownIndicator" class="lockdown-indicator">🔒 Locked Kiosk Mode Active</div>
-
-<div class="kiosk-frame" id="app"></div>
-
-<!-- Universal In-App PIN Prompt Modal -->
-<div id="pinModal" class="tamper-overlay">
-  <div class="kiosk-frame" style="max-width: 440px; text-align: center;">
-    <div id="pinModalIcon" style="font-size: 2.8rem; margin-bottom: 6px;">🔐</div>
-    <h2 id="pinModalTitle" style="margin: 0 0 6px 0; font-size: 1.5rem; color: #fff;">Teacher PIN Required</h2>
-    <p id="pinModalMsg" style="color: var(--text-muted); margin: 0 0 14px 0; font-size: 0.9rem;">
-      Enter your teacher PIN to exit Kiosk Lockdown mode.
-    </p>
-    
-    <input type="password" id="modalPinField" class="search-input" style="max-width: 220px; text-align: center; font-size: 24px; letter-spacing: 6px; margin: 0 auto 10px auto;" placeholder="••••" maxlength="8" onkeydown="handleModalPinKey(event)">
-    <div id="modalPinErr" class="inline-error"></div>
-    
-    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 6px;">
-      <button class="btn-nav" onclick="closePinModal()">Cancel</button>
-      <button class="btn-teal" id="modalSubmitBtn" onclick="confirmModalPin()">Authorize</button>
+  <!-- Top Persistent Status Bar -->
+  <header class="kiosk-header-bar">
+    <div class="header-left">
+      <span class="active-passes-title">ACTIVE PASSES • SALIDAS (<span id="active-count">0</span>/<span id="pass-limit-display">2</span>)</span>
+      <span class="locked-kiosk-badge">🔒 LOCKED KIOSK MODE ACTIVE</span>
     </div>
-  </div>
-</div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-header" onclick="openTeacherAuth()">⚙️ Teacher Area</button>
+    </div>
+  </header>
 
-<!-- Overdue Explanation Modal (> 2 min Overdue) -->
-<div id="overdueModal" class="tamper-overlay">
-  <div class="kiosk-frame" style="max-width: 520px; text-align: left;">
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-      <span style="font-size: 2rem;">⏱️</span>
+  <!-- Main View Container -->
+  <main class="container">
+    <!-- Active Passes View -->
+    <section id="view-active-passes" class="view-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2>Current Hall Passes</h2>
+        <button class="btn-primary" onclick="showNewPassFlow()">+ Issue Hall Pass / Salida</button>
+      </div>
+      <div id="active-passes-list">
+        <p style="color:var(--text-muted); text-align:center; padding: 20px;">No students currently out of room.</p>
+      </div>
+    </section>
+
+    <!-- Pass Creation Wizard (Hidden by default) -->
+    <section id="view-new-pass" class="view-card" style="display: none;">
+      <h2 id="wizard-step-title">Select Reason / Razón</h2>
+      
+      <!-- Step 1: Reasons -->
+      <div id="step-reasons" class="selection-grid">
+        <button class="tile-btn" onclick="selectReason('Bathroom')">🚻 Bathroom / Baño</button>
+        <button class="tile-btn" onclick="selectReason('Water')">💧 Water Fountain / Agua</button>
+        <button class="tile-btn" onclick="selectReason('Nurse')">🩹 Nurse / Enfermería</button>
+        <button class="tile-btn" onclick="selectReason('Office')">🏢 Main Office / Oficina</button>
+        <button class="tile-btn" onclick="selectReason('Other')">📌 Miscellaneous / Varios</button>
+      </div>
+
+      <!-- Step 2: Period Selection -->
+      <div id="step-periods" class="selection-grid" style="display: none;"></div>
+
+      <!-- Step 3: Student Selection -->
+      <div id="step-students" style="display: none;">
+        <input type="text" id="student-search-input" placeholder="🔍 Search name / Buscar nombre..." oninput="filterStudentList()" />
+        <div id="students-grid" class="selection-grid"></div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button class="btn-header" onclick="cancelPassFlow()">Cancel</button>
+      </div>
+    </section>
+
+    <!-- Teacher Admin Portal (Protected) -->
+    <section id="view-teacher-portal" class="view-card" style="display: none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>⚙️ Teacher Configuration & Logs</h2>
+        <button class="btn-header" onclick="closeTeacherPortal()">Back to Kiosk</button>
+      </div>
+
+      <!-- Section 1: Sync with Google Sheets -->
+      <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+        <h3>1. Two-Way Google Sheets Sync</h3>
+        <label>Google Apps Script Webhook URL:</label>
+        <input type="text" id="webhook-url-input" placeholder="https://script.google.com/macros/s/.../exec" />
+        <div class="btn-group">
+          <button class="btn-primary" onclick="saveWebhookUrl()">Save URL</button>
+          <button class="btn-header" onclick="testSheetConnection()">Ping Connection</button>
+          <button class="btn-primary" onclick="syncRostersFromGoogleSheet()">📥 Pull Rosters from Sheet</button>
+          <button class="btn-success" onclick="pushLogsToGoogleSheet()">📤 Push Pass Logs to Sheet</button>
+        </div>
+      </div>
+
+      <!-- Section 2: Universal CSV / Text Import & Export -->
+      <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+        <h3>2. Import / Export via Clipboard / CSV</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:10px;">Works on any Fire tablet or browser without requiring file download permissions.</p>
+        <div class="btn-group">
+          <button class="btn-header" onclick="openImportModal()">📋 Paste Rosters (CSV / Excel)</button>
+          <button class="btn-header" onclick="openExportModal()">📋 Copy Rosters to Clipboard</button>
+        </div>
+      </div>
+
+      <!-- Section 3: Class Periods & Rosters -->
+      <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+          <h3>3. Class Rosters & Subjects</h3>
+          <button class="btn-header" onclick="addNewPeriod()">+ Add Period</button>
+        </div>
+        <div id="roster-periods-container"></div>
+      </div>
+
+      <!-- Section 4: Live Pass Logs & History -->
       <div>
-        <h2 style="margin: 0; color: #f87171; font-size: 1.45rem;">Overdue Limit Exceeded</h2>
-        <p style="margin: 2px 0 0 0; color: var(--text-muted); font-size: 0.85rem;">Motivo de Demora (+2 min de retraso)</p>
-      </div>
-    </div>
-    
-    <p id="overdueStudentPrompt" style="color: var(--text); font-size: 0.95rem; margin: 12px 0;">
-      <strong>Student:</strong> Please provide a quick reason why your pass exceeded the allowed limit:
-    </p>
-
-    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
-      <button class="quick-chip" onclick="selectQuickReason('Long line at restroom / Fila larga en el baño')">🚽 Long line at restroom / Fila larga en el baño</button>
-      <button class="quick-chip" onclick="selectQuickReason('Spoke with teacher/staff / Hablé con un maestro')">🗣️ Spoke with teacher or staff / Hablé con maestro</button>
-      <button class="quick-chip" onclick="selectQuickReason('Nurse visit / Visita a enfermería')">🏥 Nurse office visit / Fui a enfermería</button>
-      <button class="quick-chip" onclick="selectQuickReason('Water fountain / Locker issue')">🚰 Water fountain / Locker issue</button>
-    </div>
-
-    <input type="text" id="overdueCustomReason" class="search-input" placeholder="Or type other reason / O escriba otra razón..." style="padding: 12px; font-size: 15px; margin-bottom: 8px;">
-    <div id="overdueErr" class="inline-error"></div>
-
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
-      <button class="btn-card-return" style="padding: 12px 24px; font-size: 1rem;" onclick="submitOverdueAndReturn()">
-        Submit & Check In / Registrar Regreso
-      </button>
-    </div>
-  </div>
-</div>
-
-<script>
-  const DEFAULT_ROSTER = {
-    "1": { course: "College Math", students: ["Alex Rivera", "David Chen", "Emma Watson", "Lucas Miller", "Sarah Jenkins"] },
-    "2": { course: "Calculus", students: ["Brandon Scott", "Chloe Adams", "Daniel Ortiz", "Jessica Taylor", "Noah Kim"] },
-    "3": { course: "College Math", students: ["Aiden Clark", "Emily Zhang", "James Wilson", "Mia Patel", "Sophia Rossi"] },
-    "4": { course: "Calculus", students: ["Andrew Bell", "Grace Morales", "Jack Murphy", "Liam Nelson", "Olivia Diaz"] },
-    "5": { course: "College Math", students: ["Benjamin Lee", "Ella Flores", "Hannah Brooks", "Logan Wright", "Mason Hall"] },
-    "6": { course: "Pre-Calculus", students: ["Ethan Wright", "Isabella King", "Mason Scott", "Oliver Evans", "Samantha Reed"] },
-    "7": { course: "Calculus Lab", students: ["Caleb Young", "Harper Wood", "Jackson White", "Kayla Hall", "Zoe Baker"] }
-  };
-
-  // Persisted or default pin
-  const savedPin = localStorage.getItem("hp_pin");
-  const isCustomPinSet = Boolean(savedPin && savedPin !== "1234");
-
-  let store = {
-    pin: savedPin || "1234",
-    webhookUrl: localStorage.getItem("hp_webhook") || "",
-    rosters: JSON.parse(localStorage.getItem("hp_rosters")) || DEFAULT_ROSTER,
-    logs: JSON.parse(localStorage.getItem("hp_logs")) || [],
-    maxConcurrent: parseInt(localStorage.getItem("hp_max_passes")) || 2,
-    baseSeconds: 300,
-    graceSeconds: 390,
-    isLockdownActive: false,
-    isKioskActivated: false
-  };
-
-  let activePasses = [];
-
-  let currentDraft = {
-    view: "STARTUP_LOCK",
-    reasonEn: "",
-    reasonEs: "",
-    period: "1",
-    course: ""
-  };
-
-  let pendingReturnPassId = null;
-  let globalTimerInterval = null;
-  const app = document.getElementById("app");
-
-  function saveStore() {
-    localStorage.setItem("hp_pin", store.pin);
-    localStorage.setItem("hp_webhook", store.webhookUrl);
-    localStorage.setItem("hp_rosters", JSON.stringify(store.rosters));
-    localStorage.setItem("hp_logs", JSON.stringify(store.logs));
-    localStorage.setItem("hp_max_passes", store.maxConcurrent);
-  }
-
-  function getSortedPeriodKeys() {
-    return Object.keys(store.rosters).sort((a, b) => {
-      const numA = parseInt(a, 10);
-      const numB = parseInt(b, 10);
-      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-      return a.localeCompare(b);
-    });
-  }
-
-  function startEngine() {
-    if (globalTimerInterval) clearInterval(globalTimerInterval);
-    globalTimerInterval = setInterval(() => {
-      if (activePasses.length > 0) {
-        updateAllPassClocks();
-      }
-    }, 1000);
-  }
-
-  function updateAllPassClocks() {
-    const now = Date.now();
-    activePasses.forEach(pass => {
-      const clockEl = document.getElementById(`clock_${pass.id}`);
-      const badgeEl = document.getElementById(`badge_${pass.id}`);
-      if (!clockEl) return;
-
-      const elapsed = Math.floor((now - pass.departTime.getTime()) / 1000);
-      const remaining = store.baseSeconds - elapsed;
-
-      if (remaining >= 0) {
-        const m = Math.floor(remaining / 60);
-        const s = remaining % 60;
-        clockEl.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        clockEl.style.color = "var(--text)";
-        if (badgeEl) {
-          badgeEl.className = "status-badge badge-ontime";
-          badgeEl.innerText = "ON TIME";
-        }
-      } else if (elapsed <= store.graceSeconds) {
-        const graceElapsed = elapsed - store.baseSeconds;
-        const m = Math.floor(graceElapsed / 60);
-        const s = graceElapsed % 60;
-        clockEl.innerText = `+${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        clockEl.style.color = "var(--warning)";
-        if (badgeEl) {
-          badgeEl.className = "status-badge badge-grace";
-          badgeEl.innerText = "GRACE PERIOD";
-        }
-      } else {
-        const overdue = elapsed - store.graceSeconds;
-        const m = Math.floor(overdue / 60);
-        const s = overdue % 60;
-        clockEl.innerText = `-${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        clockEl.style.color = "var(--danger)";
-        if (badgeEl) {
-          badgeEl.className = "status-badge badge-overdue";
-          badgeEl.innerText = overdue > 120 ? "OVERDUE (+2m)" : "OVERDUE";
-        }
-      }
-    });
-  }
-
-  /* --- LOCKDOWN & IN-APP PIN AUTHENTICATION --- */
-  let pendingModalAction = null;
-
-  function reEnterFullscreen() {
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
-    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-  }
-
-  function enterLockdownMode() {
-    store.isLockdownActive = true;
-    document.getElementById("lockdownIndicator").style.display = "block";
-    reEnterFullscreen();
-    currentDraft.view = activePasses.length > 0 ? "HOME" : "REASON";
-    render();
-  }
-
-  function requestUnlockKiosk() {
-    pendingModalAction = "UNLOCK_KIOSK";
-    document.getElementById("pinModalIcon").innerText = "🔓";
-    document.getElementById("pinModalTitle").innerText = "Exit Kiosk Lockdown";
-    document.getElementById("pinModalMsg").innerText = "Enter Teacher PIN to unlock the screen.";
-    document.getElementById("modalPinField").value = "";
-    document.getElementById("modalPinErr").innerText = "";
-    document.getElementById("pinModal").style.display = "flex";
-    setTimeout(() => document.getElementById("modalPinField").focus(), 100);
-  }
-
-  function triggerTamperAlert(reason) {
-    pendingModalAction = "TAMPER_RECOVERY";
-    document.getElementById("pinModalIcon").innerText = "🚨";
-    document.getElementById("pinModalTitle").innerText = "Security Alert";
-    document.getElementById("pinModalMsg").innerText = `${reason} Enter Teacher PIN to restore.`;
-    document.getElementById("modalPinField").value = "";
-    document.getElementById("modalPinErr").innerText = "";
-    document.getElementById("pinModal").style.display = "flex";
-    setTimeout(() => document.getElementById("modalPinField").focus(), 100);
-
-    store.logs.push({
-      timestamp: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      period: "ALERT",
-      course: "Security",
-      studentName: "Tamper Violation",
-      reason: reason,
-      duration: "0 min",
-      status: "FLAGGED"
-    });
-    saveStore();
-
-    if (store.webhookUrl) {
-      fetch(store.webhookUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "TAMPER_ALERT", detail: reason })
-      }).catch(() => {});
-    }
-  }
-
-  function confirmModalPin() {
-    const val = document.getElementById("modalPinField").value.trim();
-    if (val === store.pin) {
-      document.getElementById("pinModal").style.display = "none";
-      if (pendingModalAction === "UNLOCK_KIOSK") {
-        store.isLockdownActive = false;
-        document.getElementById("lockdownIndicator").style.display = "none";
-        if (document.exitFullscreen && document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        }
-        render();
-      } else if (pendingModalAction === "TAMPER_RECOVERY") {
-        reEnterFullscreen();
-      }
-    } else {
-      document.getElementById("modalPinErr").innerText = "⚠️ Incorrect PIN. Try again.";
-      document.getElementById("modalPinField").value = "";
-      document.getElementById("modalPinField").focus();
-    }
-  }
-
-  function closePinModal() {
-    if (pendingModalAction === "TAMPER_RECOVERY") return;
-    document.getElementById("pinModal").style.display = "none";
-  }
-
-  function handleModalPinKey(e) {
-    if (e.key === "Enter") confirmModalPin();
-  }
-
-  window.addEventListener("keydown", (e) => {
-    if (!store.isLockdownActive) return;
-    if (e.key === "Escape" || e.key === "F11" || (e.altKey && e.key === "Tab") || (e.metaKey && e.key === "w") || (e.ctrlKey && e.key === "t")) {
-      e.preventDefault();
-      triggerTamperAlert("Attempted exit shortcut (" + e.key + ").");
-    }
-  }, true);
-
-  document.addEventListener("visibilitychange", () => {
-    if (store.isLockdownActive && document.hidden) {
-      triggerTamperAlert("Tab or browser window lost focus.");
-    }
-  });
-
-  document.addEventListener("fullscreenchange", () => {
-    if (store.isLockdownActive && !document.fullscreenElement && pendingModalAction !== "UNLOCK_KIOSK") {
-      triggerTamperAlert("Fullscreen kiosk mode was interrupted.");
-    }
-  });
-
-  /* --- STARTUP TEACHER ACTIVATION GATE --- */
-  function unlockStartupSession() {
-    const val = document.getElementById("startupPinField").value.trim();
-    if (val === store.pin) {
-      store.isKioskActivated = true;
-      currentDraft.view = "REASON";
-      render();
-    } else {
-      document.getElementById("startupPinErr").innerText = "⚠️ Incorrect Teacher PIN for this device. Try again.";
-      document.getElementById("startupPinField").value = "";
-      document.getElementById("startupPinField").focus();
-    }
-  }
-
-  function lockSessionBack() {
-    store.isKioskActivated = false;
-    currentDraft.view = "STARTUP_LOCK";
-    render();
-  }
-
-  function promptResetDevicePin() {
-    const confirmation = prompt("Teacher Safety Reset:\nType 'RESET' to restore this device's PIN back to 1234:");
-    if (confirmation === "RESET") {
-      store.pin = "1234";
-      localStorage.setItem("hp_pin", "1234");
-      alert("PIN successfully restored to factory default: 1234.");
-      render();
-    }
-  }
-
-  function render() {
-    // 0. STARTUP GATE: UNTIL TEACHER UNLOCKS, BLOCK ALL STUDENT ENTRY
-    if (!store.isKioskActivated) {
-      const isCustom = store.pin !== "1234";
-      app.innerHTML = `
-        <div style="text-align: center; padding: 12px 6px;">
-          <div style="font-size: 3.2rem; margin-bottom: 8px;">🎟️</div>
-          <h1 class="header-title" style="font-size: 1.85rem; margin-bottom: 6px;">Classroom Kiosk Locked</h1>
-          <p class="header-subtitle" style="margin-bottom: 22px;">
-            Teacher activation required / Activación del maestro requerida
-          </p>
-
-          <div class="admin-card" style="text-align: center; padding: 26px 20px; max-width: 440px; margin: 0 auto;">
-            <p style="font-size: 0.95rem; font-weight: 700; color: #cbd5e1; margin-bottom: 14px;">
-              Enter Teacher PIN to begin classroom session:
-            </p>
-            <input type="password" id="startupPinField" class="search-input" style="max-width: 220px; text-align: center; font-size: 24px; letter-spacing: 6px; margin: 0 auto 8px auto;" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter') unlockStartupSession()">
-            <div id="startupPinErr" class="inline-error"></div>
-            
-            <button class="btn-teal" style="font-size: 1.1rem; padding: 14px 34px; margin-top: 8px; width: 100%; max-width: 260px;" onclick="unlockStartupSession()">
-              Unlock Class Kiosk / Activar Kiosco
-            </button>
-
-            <div style="margin-top: 18px;">
-              <button class="btn-nav" style="border: none; font-size: 0.78rem; color: #64748b; padding: 4px;" onclick="promptResetDevicePin()">Forgot / Reset Device PIN</button>
-            </div>
-          </div>
-          <p style="font-size: 0.8rem; color: #475569; margin-top: 18px;">
-            ${isCustom ? "🔒 Device-specific custom PIN active on this tablet/browser" : "Default activation PIN for new setups: 1234"}
-          </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>4. Local Pass Audit Logs (<span id="log-count">0</span> entries)</h3>
+          <button class="btn-danger" onclick="clearLocalLogs()">Clear Local Logs</button>
         </div>
-      `;
-      setTimeout(() => {
-        const el = document.getElementById("startupPinField");
-        if (el) el.focus();
-      }, 50);
-      return;
-    }
-
-    // 1. ACTIVE PASSES VIEW
-    if (activePasses.length > 0 && currentDraft.view === "HOME") {
-      renderActivePassesDashboard();
-      return;
-    }
-
-    if (activePasses.length === 0 && currentDraft.view === "HOME") {
-      currentDraft.view = "REASON";
-    }
-
-    // 2. SCREEN 1: SELECT REASON
-    if (currentDraft.view === "REASON") {
-      app.innerHTML = `
-        <div class="header-tag">Screen 1 • Paso 1</div>
-        <h1 class="header-title">Select Reason / Razón</h1>
-        <p class="header-subtitle">Tap why you are leaving / Seleccione el motivo</p>
-
-        <div class="kiosk-btn btn-bath" onclick="chooseReason('Bathroom', 'Baño')">
-          <h2>Bathroom</h2>
-          <p>Baño / Sanitarios</p>
-        </div>
-
-        <div class="kiosk-btn btn-hall" onclick="chooseReason('Hallway', 'Pasillo')">
-          <h2>Hallway</h2>
-          <p>Pasillo (Agua, Casillero, Enfermería)</p>
-        </div>
-
-        <div class="kiosk-btn btn-misc" onclick="chooseReason('Miscellaneous', 'Varios')">
-          <h2>Miscellaneous</h2>
-          <p>Varios / Otra Razón</p>
-        </div>
-
-        <div style="margin-top: 26px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-          ${activePasses.length > 0 ? `<button class="btn-nav" onclick="navigate('HOME')">← Active Passes (${activePasses.length})</button>` : `<button class="btn-nav" onclick="navigate('TEACHER_LOCK')">⚙️ Teacher area / Área del Maestro</button>`}
-          <div style="display: flex; gap: 8px;">
-            <button class="btn-nav" style="border-color: #334155; font-size: 0.85rem;" onclick="lockSessionBack()">🔒 Lock Kiosk</button>
-            ${store.isLockdownActive ? `<button class="btn-nav" style="color: #34d399; border-color: #059669;" onclick="requestUnlockKiosk()">🔓 Exit Fullscreen</button>` : ""}
-          </div>
-        </div>
-      `;
-    } 
-    // 3. SCREEN 2: SELECT PERIOD
-    else if (currentDraft.view === "PERIOD") {
-      const pKeys = getSortedPeriodKeys();
-      app.innerHTML = `
-        <div class="header-tag">Screen 2 • Paso 2</div>
-        <h1 class="header-title">Select Period / Período</h1>
-        <p class="header-subtitle">${currentDraft.reasonEn} (${currentDraft.reasonEs})</p>
-
-        <div class="period-grid">
-          ${pKeys.map(p => `
-            <div class="period-btn" onclick="choosePeriod('${p}')">
-              <h3>Period ${p} / Período ${p}</h3>
-              <p>${store.rosters[p]?.course || "Open Roster"} (${(store.rosters[p]?.students || []).length} students)</p>
-            </div>
-          `).join("")}
-        </div>
-
-        <button class="btn-nav" onclick="navigate('REASON')">← Back / Regresar</button>
-      `;
-    } 
-    // 4. SCREEN 3: SELECT NAME
-    else if (currentDraft.view === "STUDENT") {
-      const roster = store.rosters[currentDraft.period]?.students || [];
-      app.innerHTML = `
-        <div class="header-tag">Screen 3 • Paso 3</div>
-        <h1 class="header-title">Select Name / Nombre</h1>
-        <p class="header-subtitle">Period ${currentDraft.period} • ${currentDraft.course}</p>
-
-        <input type="text" class="search-input" id="searchBox" placeholder="🔍 Search name / Buscar nombre..." oninput="filterStudents()" autofocus>
-
-        <div class="student-list" id="studentContainer">
-          ${renderStudentList(roster)}
-        </div>
-
-        <div style="margin-top: 16px;">
-          <button class="btn-nav" onclick="navigate('PERIOD')">← Back / Regresar</button>
-        </div>
-      `;
-    } 
-    // 5. TEACHER PIN ENTRY SCREEN
-    else if (currentDraft.view === "TEACHER_LOCK") {
-      app.innerHTML = `
-        <button class="btn-nav" onclick="navigate('${activePasses.length > 0 ? "HOME" : "REASON"}')">← Back to Kiosk</button>
-        <h1 class="header-title" style="margin-top: 16px;">Teacher Area Security</h1>
-        <p class="header-subtitle">Enter PIN to access configuration & audit logs</p>
-
-        <div class="admin-card" style="text-align: center; padding: 24px;">
-          <input type="password" id="pinField" class="search-input" style="max-width: 220px; text-align: center; font-size: 24px; letter-spacing: 6px; margin: 0 auto 10px auto;" placeholder="••••" maxlength="8" onkeydown="handleTeacherPinKey(event)">
-          <div id="teacherPinErr" class="inline-error"></div>
-          <div style="margin-top: 8px;">
-            <button class="btn-teal" style="font-size: 1.1rem; padding: 12px 32px;" onclick="checkPin()">Open Portal</button>
-          </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 14px;">Press Return on keyboard or click Open Portal.</p>
-        </div>
-      `;
-      setTimeout(() => {
-        const f = document.getElementById("pinField");
-        if (f) f.focus();
-      }, 50);
-    } 
-    // 6. TEACHER PORTAL
-    else if (currentDraft.view === "TEACHER_PORTAL") {
-      renderTeacherPortal();
-    }
-  }
-
-  function renderActivePassesDashboard() {
-    const isLimitReached = activePasses.length >= store.maxConcurrent;
-
-    app.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <span class="header-tag" style="margin: 0;">Active Passes • Salidas Activas (${activePasses.length} / ${store.maxConcurrent})</span>
-        ${store.isLockdownActive ? `<button class="btn-nav" style="color: #34d399; border-color: #059669; padding: 6px 12px; font-size: 0.8rem;" onclick="requestUnlockKiosk()">🔓 Exit Fullscreen</button>` : `<button class="btn-nav" style="padding: 6px 12px; font-size: 0.8rem;" onclick="navigate('TEACHER_LOCK')">⚙️ Teacher area</button>`}
-      </div>
-
-      <div id="activePassesContainer">
-        ${activePasses.map(p => `
-          <div class="active-pass-card" id="card_${p.id}">
-            <div class="pass-info">
-              <span id="badge_${p.id}" class="status-badge badge-ontime">ON TIME</span>
-              <h3>${p.studentName}</h3>
-              <p style="color: var(--c-bath); font-weight: 700;">${p.reasonEn} / ${p.reasonEs}</p>
-              <p style="font-size: 0.82rem; margin-top: 2px;">Period ${p.period} • ${p.course}</p>
-            </div>
-            <div class="pass-timer-box">
-              <div class="pass-clock" id="clock_${p.id}">05:00</div>
-              <button class="btn-card-return" onclick="initiateStudentReturn('${p.id}')">
-                I'M BACK<br><span style="font-size: 0.75rem;">YA REGRESÉ</span>
-              </button>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-
-      ${isLimitReached ? `
-        <div style="background: rgba(239, 68, 68, 0.1); border: 1.5px solid var(--danger); border-radius: 16px; padding: 14px; text-align: center; color: #f87171; font-weight: 700; margin-top: 12px; font-size: 0.95rem;">
-          🚫 Classroom Pass Limit Reached (${store.maxConcurrent} Out)<br>
-          <span style="font-size: 0.82rem; color: #fca5a5; font-weight: 400;">A student must return before another can check out.</span>
-        </div>
-      ` : `
-        <button class="btn-add-pass" onclick="navigate('REASON')">
-          <span style="font-size: 1.35rem;">+</span>
-          <span>Issue Another Hall Pass / Salida Adicional</span>
-        </button>
-      `}
-    `;
-    updateAllPassClocks();
-  }
-
-  function handleTeacherPinKey(e) {
-    if (e.key === "Enter") checkPin();
-  }
-
-  function chooseReason(en, es) {
-    currentDraft.reasonEn = en;
-    currentDraft.reasonEs = es;
-    currentDraft.view = "PERIOD";
-    render();
-  }
-
-  function choosePeriod(p) {
-    currentDraft.period = p;
-    currentDraft.course = store.rosters[p]?.course || "Math";
-    currentDraft.view = "STUDENT";
-    render();
-  }
-
-  function renderStudentList(list) {
-    if (!list || list.length === 0) {
-      return `<p style="color: var(--text-muted); padding: 10px;">No students enrolled for this period.</p>`;
-    }
-    return list.map(name => `
-      <div class="student-item" onclick="startStudentPass('${name.replace(/'/g, "\\'")}')">
-        <span>${name}</span>
-        <span style="color: var(--c-bath); font-size: 0.9rem;">Start →</span>
-      </div>
-    `).join("");
-  }
-
-  function filterStudents() {
-    const q = document.getElementById("searchBox").value.toLowerCase();
-    const all = store.rosters[currentDraft.period]?.students || [];
-    const filtered = all.filter(s => s.toLowerCase().includes(q));
-    document.getElementById("studentContainer").innerHTML = renderStudentList(filtered);
-  }
-
-  function startStudentPass(student) {
-    if (activePasses.some(p => p.studentName === student)) {
-      alert(`${student} is already out on an active hall pass.`);
-      return;
-    }
-
-    const newPass = {
-      id: "pass_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
-      studentName: student,
-      reasonEn: currentDraft.reasonEn,
-      reasonEs: currentDraft.reasonEs,
-      period: currentDraft.period,
-      course: currentDraft.course,
-      departTime: new Date()
-    };
-
-    activePasses.push(newPass);
-
-    if (store.webhookUrl) {
-      const exp = new Date(newPass.departTime.getTime() + store.baseSeconds * 1000);
-      fetch(store.webhookUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "DEPART",
-          date: newPass.departTime.toLocaleDateString(),
-          period: newPass.period,
-          course: newPass.course,
-          studentName: newPass.studentName,
-          reason: newPass.reasonEn,
-          departTime: newPass.departTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          expectedReturn: exp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-        })
-      }).catch(() => {});
-    }
-
-    currentDraft.view = "HOME";
-    render();
-  }
-
-  function initiateStudentReturn(passId) {
-    const pass = activePasses.find(p => p.id === passId);
-    if (!pass) return;
-
-    const elapsedSecs = Math.floor((Date.now() - pass.departTime.getTime()) / 1000);
-    const overdueSeconds = elapsedSecs - store.graceSeconds;
-
-    if (overdueSeconds > 120) {
-      pendingReturnPassId = passId;
-      document.getElementById("overdueStudentPrompt").innerHTML = `
-        <strong>${pass.studentName}</strong>, your pass is over 2 minutes overdue (${Math.floor(overdueSeconds / 60)}m ${overdueSeconds % 60}s). Please specify why you were delayed:
-      `;
-      document.getElementById("overdueCustomReason").value = "";
-      document.getElementById("overdueErr").innerText = "";
-      document.querySelectorAll(".quick-chip").forEach(c => c.classList.remove("selected"));
-      document.getElementById("overdueModal").style.display = "flex";
-      return;
-    }
-
-    finalizeReturn(passId, "");
-  }
-
-  function selectQuickReason(reason) {
-    document.getElementById("overdueCustomReason").value = reason;
-    document.querySelectorAll(".quick-chip").forEach(c => c.classList.remove("selected"));
-    event.currentTarget.classList.add("selected");
-  }
-
-  function submitOverdueAndReturn() {
-    const reason = document.getElementById("overdueCustomReason").value.trim();
-    if (!reason) {
-      document.getElementById("overdueErr").innerText = "⚠️ Please select or type an explanation before checking in.";
-      return;
-    }
-
-    document.getElementById("overdueModal").style.display = "none";
-    if (pendingReturnPassId) {
-      finalizeReturn(pendingReturnPassId, reason);
-      pendingReturnPassId = null;
-    }
-  }
-
-  function finalizeReturn(passId, overdueExplanation) {
-    const index = activePasses.findIndex(p => p.id === passId);
-    if (index === -1) return;
-
-    const pass = activePasses[index];
-    const returnTime = new Date();
-    const elapsedSecs = Math.floor((returnTime - pass.departTime) / 1000);
-    const durationMins = (elapsedSecs / 60).toFixed(2);
-
-    let status = "On Time";
-    if (elapsedSecs > store.graceSeconds) {
-      status = elapsedSecs - store.graceSeconds > 120 ? "Overdue (>2m)" : "Overdue";
-    } else if (elapsedSecs > store.baseSeconds) {
-      status = "Within Grace";
-    }
-
-    store.logs.push({
-      timestamp: pass.departTime.toLocaleDateString() + " " + pass.departTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      period: pass.period,
-      course: pass.course,
-      studentName: pass.studentName,
-      reason: pass.reasonEn + (overdueExplanation ? ` [Delayed: ${overdueExplanation}]` : ""),
-      duration: durationMins + " min",
-      status: status
-    });
-    saveStore();
-
-    if (store.webhookUrl) {
-      fetch(store.webhookUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "RETURN",
-          studentName: pass.studentName,
-          actualReturnTime: returnTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          totalMinutesOut: durationMins,
-          finalStatus: status,
-          overdueReason: overdueExplanation || "N/A"
-        })
-      }).catch(() => {});
-    }
-
-    activePasses.splice(index, 1);
-
-    if (activePasses.length === 0) {
-      currentDraft.view = "REASON";
-    } else {
-      currentDraft.view = "HOME";
-    }
-    render();
-  }
-
-  function checkPin() {
-    const val = document.getElementById("pinField").value.trim();
-    if (val === store.pin) {
-      currentDraft.view = "TEACHER_PORTAL";
-      render();
-    } else {
-      document.getElementById("teacherPinErr").innerText = "⚠️ Incorrect Teacher PIN for this device. Try again.";
-      document.getElementById("pinField").value = "";
-      document.getElementById("pinField").focus();
-    }
-  }
-
-  function renderTeacherPortal() {
-    const pKeys = getSortedPeriodKeys();
-
-    app.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 class="header-title" style="font-size: 1.5rem; margin: 0;">Teacher Area</h1>
-        <button class="btn-nav" onclick="navigate('${activePasses.length > 0 ? "HOME" : "REASON"}')">Exit to Kiosk</button>
-      </div>
-
-      <button class="btn-lockdown-hero" onclick="enterLockdownMode()">
-        <span style="font-size: 1.5rem;">🔒</span>
-        <span>LAUNCH KIOSK LOCKDOWN MODE</span>
-      </button>
-
-      <div class="admin-card">
-        <h3>1. Multi-Student Pass Limit</h3>
-        <p>Control the maximum number of students allowed out at the same time:</p>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <input type="number" id="maxPassesInput" class="search-input" style="max-width: 120px; font-size: 18px; margin: 0;" min="1" max="10" value="${store.maxConcurrent}">
-          <button class="btn-teal" onclick="saveMaxPasses()">Save Limit</button>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>2. Google Sheets Webhook URL (Audit & Experience Sync)</h3>
-        <p>Student departures, returns, overdue reasons, and security events stream here:</p>
-        <input type="text" id="webhookInput" class="search-input" style="font-size: 14px; margin-bottom: 8px;" placeholder="https://script.google.com/macros/s/.../exec" value="${store.webhookUrl}">
-        
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-          <button class="btn-teal" onclick="saveWebhook()">Save URL</button>
-          <button class="btn-teal" style="background: #059669;" id="testPingBtn" onclick="testWebhookConnection()">Test Connection</button>
-        </div>
-        <div id="testPingStatus" style="font-size: 0.85rem; font-weight: 700; margin-top: 6px;"></div>
-      </div>
-
-      <div class="admin-card">
-        <h3 style="margin: 0;">3. Class Periods & Rosters (${pKeys.length} Active Periods)</h3>
-        <p style="margin: 4px 0 12px 0;">Add periods, edit subject names, delete unused ones, or modify rosters:</p>
-
-        <div style="background: #090d16; border: 1px dashed var(--border-focus); border-radius: 12px; padding: 12px; margin-bottom: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="newPeriodKey" class="search-input" style="max-width: 130px; margin: 0; padding: 10px 12px; font-size: 14px;" placeholder="Period # (e.g. 8)">
-          <input type="text" id="newPeriodCourse" class="search-input" style="flex: 1; min-width: 160px; margin: 0; padding: 10px 12px; font-size: 14px;" placeholder="Course Name (e.g. Advisory)">
-          <button class="btn-teal" style="background: var(--c-bath); color: #000;" onclick="addNewPeriod()">+ Add Period</button>
-        </div>
-
-        <div id="periodRowsContainer">
-          ${pKeys.map(p => `
-            <div class="period-edit-row">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-weight: 800; color: var(--c-bath); font-size: 1.05rem;">Period ${p}</span>
-                <button class="btn-nav" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4); padding: 4px 10px; font-size: 0.8rem;" onclick="deletePeriod('${p}')">✕ Remove Period ${p}</button>
-              </div>
-
-              <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Subject / Course Title:</label>
-              <input type="text" id="c_name_${p}" class="search-input" style="padding: 10px 12px; margin-bottom: 8px; font-size: 14px;" value="${store.rosters[p]?.course || ""}">
-
-              <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Student Names (one per line):</label>
-              <textarea id="roster_txt_${p}" class="admin-input" style="height: 75px;">${(store.rosters[p]?.students || []).join("\n")}</textarea>
-            </div>
-          `).join("")}
-        </div>
-
-        <button class="btn-teal" style="font-size: 1.05rem; padding: 14px 28px;" onclick="saveClassLists()">Save All Class Lists</button>
-      </div>
-
-      <div class="admin-card">
-        <h3>4. Bulk Import Rosters (Excel / CSV)</h3>
-        <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" onchange="importExcelFile(event)">
-      </div>
-
-      <div class="admin-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin: 0;">5. Local Pass Log (${store.logs.length} entries)</h3>
-          <div>
-            <button class="btn-teal" style="background: var(--success); color: #000;" onclick="exportCSV()">Export CSV</button>
-            <button class="btn-nav" style="color: var(--danger); border-color: #7f1d1d;" onclick="clearLogs()">Clear</button>
-          </div>
-        </div>
-
-        <div class="log-table-wrap">
-          <table>
+        <div class="table-container">
+          <table id="logs-table">
             <thead>
               <tr>
-                <th>Date / Time</th>
+                <th>Date/Time</th>
                 <th>Period</th>
                 <th>Student</th>
-                <th>Reason & Notes</th>
+                <th>Reason</th>
                 <th>Duration</th>
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody>
-              ${store.logs.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No entries recorded yet.</td></tr>` : 
-                store.logs.slice().reverse().map(l => `
-                  <tr>
-                    <td>${l.timestamp}</td>
-                    <td>P${l.period} (${l.course})</td>
-                    <td><strong>${l.studentName}</strong></td>
-                    <td>${l.reason}</td>
-                    <td>${l.duration}</td>
-                    <td><span style="color: ${l.status === 'On Time' ? '#4ade80' : l.status.includes('Overdue') ? '#f87171' : l.status === 'FLAGGED' ? '#ef4444' : '#fde047'}; font-weight: 700;">${l.status}</span></td>
-                  </tr>
-                `).join("")}
-            </tbody>
+            <tbody id="logs-table-body"></tbody>
           </table>
         </div>
       </div>
+    </section>
+  </main>
 
-      <div class="admin-card">
-        <h3>6. Change Security PIN for this Device</h3>
-        <input type="password" id="newPin" class="search-input" style="max-width: 200px; font-size: 18px;" placeholder="New PIN">
-        <button class="btn-teal" onclick="updatePin()">Save PIN</button>
+  <!-- Teacher Auth Modal -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width:360px; text-align:center;">
+      <h3>Enter Teacher PIN</h3>
+      <input type="password" id="teacher-pin-input" maxlength="8" placeholder="••••" style="text-align:center; font-size:1.5rem; letter-spacing:4px;" />
+      <div class="btn-group" style="justify-content:center;">
+        <button class="btn-primary" onclick="verifyTeacherPin()">Unlock</button>
+        <button class="btn-header" onclick="closeAuthModal()">Cancel</button>
       </div>
-    `;
-  }
+    </div>
+  </div>
 
-  function saveMaxPasses() {
-    const val = parseInt(document.getElementById("maxPassesInput").value, 10);
-    if (!isNaN(val) && val >= 1) {
-      store.maxConcurrent = val;
-      saveStore();
-      alert(`Classroom limit set to ${val} concurrent passes!`);
-    } else {
-      alert("Please enter a valid number (at least 1).");
+  <!-- CSV Import Modal -->
+  <div id="import-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Paste Roster Data (Excel / CSV)</h3>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+        Format: <code>Period,Course,Student Name</code> (one per line) or simply paste columns directly from Excel/Sheets.
+      </p>
+      <textarea id="import-textarea" rows="10" placeholder="1,Calculus,Andrew Bell&#10;1,Calculus,Grace Morales&#10;2,College Math,Benjamin Lee"></textarea>
+      <div class="btn-group">
+        <button class="btn-primary" onclick="processPastedRoster()">Import & Overwrite</button>
+        <button class="btn-header" onclick="closeImportModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV Export Modal -->
+  <div id="export-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Copy Roster Data</h3>
+      <textarea id="export-textarea" rows="10" readonly></textarea>
+      <div class="btn-group">
+        <button class="btn-primary" onclick="copyExportText()">Copy to Clipboard</button>
+        <button class="btn-header" onclick="closeExportModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification element -->
+  <div id="kiosk-toast"></div>
+
+  <script>
+    // --- STATE MANAGEMENT ---
+    const DEFAULT_ROSTERS = {
+      "1": { course: "College Math Prep", students: ["Courtney Alexander", "Andrea Aviles Rojas", "Odalis Bombon", "Emily Campos", "Jacob Cortes", "Melanie De La Cruz"] },
+      "2": { course: "College Math Prep", students: ["Emanuel Aroni", "Deyna Aucancela", "David Avalos", "Anderson Baez"] },
+      "3": { course: "Period 3", students: [] },
+      "4": { course: "Calculus", students: ["Andrew Bell", "Grace Morales", "Jack Murphy"] },
+      "5": { course: "College Math", students: ["Benjamin Lee", "Ella Flores", "Hannah Brooks"] },
+      "6": { course: "Pre-Calculus", students: ["Lucas Vance", "Zoe Saldana"] },
+      "7": { course: "AP Calculus", students: ["Caleb Young", "Harper West", "Jackson White"] }
+    };
+
+    let appState = {
+      pin: localStorage.getItem('teacherPin') || '2018',
+      webhookUrl: localStorage.getItem('webhookUrl') || '',
+      maxPasses: parseInt(localStorage.getItem('maxPasses') || '2', 10),
+      rosters: JSON.parse(localStorage.getItem('hallPassRosters')) || DEFAULT_ROSTERS,
+      activePasses: JSON.parse(localStorage.getItem('hallPassActive')) || [],
+      logs: JSON.parse(localStorage.getItem('hallPassLocalLog')) || [],
+      currentWizard: { reason: '', period: '', student: '' }
+    };
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      document.getElementById('pass-limit-display').innerText = appState.maxPasses;
+      document.getElementById('webhook-url-input').value = appState.webhookUrl;
+      renderActivePasses();
+      renderTeacherRosters();
+      renderLogsTable();
+      setInterval(updatePassTimers, 1000);
+    };
+
+    function showToast(msg) {
+      const toast = document.getElementById('kiosk-toast');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
-  }
 
-  function navigate(view) {
-    currentDraft.view = view;
-    render();
-  }
-
-  function saveWebhook() {
-    store.webhookUrl = document.getElementById("webhookInput").value.trim();
-    saveStore();
-    alert("Google Sheets Webhook URL saved!");
-  }
-
-  function testWebhookConnection() {
-    const url = document.getElementById("webhookInput").value.trim();
-    const statusDiv = document.getElementById("testPingStatus");
-
-    if (!url) {
-      statusDiv.style.color = "var(--danger)";
-      statusDiv.innerText = "⚠️ Please paste your Google Sheets Webhook URL first.";
-      return;
+    // --- TWO-WAY GOOGLE SHEETS SYNC ---
+    function saveWebhookUrl() {
+      const url = document.getElementById('webhook-url-input').value.trim();
+      appState.webhookUrl = url;
+      localStorage.setItem('webhookUrl', url);
+      showToast("Webhook URL saved!");
     }
 
-    statusDiv.style.color = "var(--warning)";
-    statusDiv.innerText = "⏳ Sending test ping to Google Sheet...";
-
-    fetch(url, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "TEST_PING" })
-    })
-    .then(() => {
-      statusDiv.style.color = "var(--success)";
-      statusDiv.innerText = "✓ Test ping sent! Check your Google Sheet to verify the new test row.";
-      store.webhookUrl = url;
-      saveStore();
-    })
-    .catch((err) => {
-      statusDiv.style.color = "var(--danger)";
-      statusDiv.innerText = "✗ Could not reach webhook. Please verify your deployment settings.";
-      console.error(err);
-    });
-  }
-
-  function addNewPeriod() {
-    const pKey = document.getElementById("newPeriodKey").value.trim();
-    const course = document.getElementById("newPeriodCourse").value.trim() || `Period ${pKey}`;
-
-    if (!pKey) return alert("Please enter a period number or label.");
-    if (store.rosters[pKey]) return alert(`Period "${pKey}" already exists.`);
-
-    syncFormInputsToStore();
-    store.rosters[pKey] = { course: course, students: [] };
-    saveStore();
-    renderTeacherPortal();
-  }
-
-  function deletePeriod(pKey) {
-    if (confirm(`Remove Period ${pKey} and its roster?`)) {
-      syncFormInputsToStore();
-      delete store.rosters[pKey];
-      saveStore();
-      renderTeacherPortal();
-    }
-  }
-
-  function syncFormInputsToStore() {
-    const pKeys = Object.keys(store.rosters);
-    pKeys.forEach(p => {
-      const cEl = document.getElementById(`c_name_${p}`);
-      const rEl = document.getElementById(`roster_txt_${p}`);
-      if (cEl && rEl) {
-        const course = cEl.value.trim();
-        const txt = rEl.value.trim();
-        const list = txt ? txt.split("\n").map(s => s.trim()).filter(Boolean) : [];
-        store.rosters[p] = { course: course, students: list };
+    async function testSheetConnection() {
+      if (!appState.webhookUrl) return alert("Save Webhook URL first.");
+      showToast("Pinging Google Sheet...");
+      try {
+        await fetch(appState.webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "TEST_PING" })
+        });
+        showToast("Ping request sent! Check your sheet for test row.");
+      } catch (err) {
+        alert("Connection error: " + err.message);
       }
-    });
-  }
+    }
 
-  function saveClassLists() {
-    syncFormInputsToStore();
-    saveStore();
-    alert("All class periods and rosters saved successfully!");
-  }
+    async function syncRostersFromGoogleSheet() {
+      if (!appState.webhookUrl) return alert("Save Webhook URL first.");
+      showToast("Reading period tabs from Google Sheet...");
+      try {
+        const res = await fetch(appState.webhookUrl);
+        const data = await res.json();
+        if (data.success && data.rosters) {
+          appState.rosters = data.rosters;
+          localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+          renderTeacherRosters();
+          showToast("Rosters successfully imported from Google Sheet!");
+        } else {
+          alert("Error from sheet: " + (data.error || "No rosters found"));
+        }
+      } catch (err) {
+        alert("Sync failed: " + err.message);
+      }
+    }
 
-  function importExcelFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    async function pushLogsToGoogleSheet() {
+      if (!appState.webhookUrl) return alert("Save Webhook URL first.");
+      if (appState.logs.length === 0) return alert("No logs recorded locally to push.");
+      showToast("Pushing logs to Google Sheet...");
+      try {
+        await fetch(appState.webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "SYNC_LOCAL_LOGS", entries: appState.logs })
+        });
+        showToast("Pass logs successfully pushed to Google Sheet!");
+      } catch (err) {
+        alert("Push failed: " + err.message);
+      }
+    }
 
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-      const data = new Uint8Array(evt.target.result);
-      const wb = XLSX.read(data, { type: 'array' });
-      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+    // --- CLIPBOARD / CSV IMPORT & EXPORT ---
+    function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
+    function closeImportModal() { document.getElementById('import-modal').style.display = 'none'; }
+    function openExportModal() {
+      let csv = "Period,Course,Student Name\n";
+      for (const p in appState.rosters) {
+        const r = appState.rosters[p];
+        r.students.forEach(s => { csv += `${p},"${r.course}","${s}"\n`; });
+      }
+      document.getElementById('export-textarea').value = csv;
+      document.getElementById('export-modal').style.display = 'flex';
+    }
+    function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
+    function copyExportText() {
+      const copyText = document.getElementById("export-textarea");
+      copyText.select();
+      document.execCommand("copy");
+      showToast("Copied roster CSV to clipboard!");
+    }
 
-      rows.forEach((r, i) => {
-        if (i === 0 && isNaN(parseInt(r[0]))) return;
-        const p = String(r[0]).trim();
-        const s = r[1] ? String(r[1]).trim() : "";
-        const c = r[2] ? String(r[2]).trim() : "";
+    function processPastedRoster() {
+      const text = document.getElementById('import-textarea').value.trim();
+      if (!text) return alert("Paste some data first.");
+      const lines = text.split('\n');
+      const newRosters = {};
 
-        if (p && s) {
-          if (!store.rosters[p]) {
-            store.rosters[p] = { course: c || `Period ${p}`, students: [] };
-          } else if (c) {
-            store.rosters[p].course = c;
-          }
-          if (!store.rosters[p].students.includes(s)) {
-            store.rosters[p].students.push(s);
+      lines.forEach(line => {
+        // Support tab or comma separation
+        const parts = line.includes('\t') ? line.split('\t') : line.split(',');
+        if (parts.length >= 2) {
+          const p = parts[0].replace(/[^0-9]/g, '') || "1";
+          const course = parts.length >= 3 ? parts[1].replace(/"/g, '').trim() : `Period ${p}`;
+          const student = (parts.length >= 3 ? parts[2] : parts[1]).replace(/"/g, '').trim();
+          if (student && !/^(student|name)/i.test(student)) {
+            if (!newRosters[p]) newRosters[p] = { course, students: [] };
+            newRosters[p].students.push(student);
           }
         }
       });
 
-      saveStore();
-      alert("Excel file imported successfully!");
-      renderTeacherPortal();
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  function exportCSV() {
-    if (store.logs.length === 0) return alert("No logs to export.");
-    let csv = "Date/Time,Period,Course,Student Name,Reason & Notes,Duration,Status\n";
-    store.logs.forEach(l => {
-      csv += `"${l.timestamp}","${l.period}","${l.course}","${l.studentName}","${l.reason}","${l.duration}","${l.status}"\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Hall_Pass_Log_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  function clearLogs() {
-    if (confirm("Delete all logged records?")) {
-      store.logs = [];
-      saveStore();
-      renderTeacherPortal();
+      if (Object.keys(newRosters).length > 0) {
+        appState.rosters = newRosters;
+        localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+        renderTeacherRosters();
+        closeImportModal();
+        showToast("Rosters successfully updated from paste!");
+      } else {
+        alert("Could not parse rows. Ensure format is: Period,Course,Student");
+      }
     }
-  }
 
-  function updatePin() {
-    const val = document.getElementById("newPin").value.trim();
-    if (val && val.length >= 4) {
-      store.pin = val;
-      saveStore();
-      alert(`PIN for this specific device updated to: ${val}`);
-      document.getElementById("newPin").value = "";
-      renderTeacherPortal();
-    } else {
-      alert("PIN must be at least 4 digits.");
+    // --- ROSTER MANAGEMENT & AUTO-SAVE ---
+    function renderTeacherRosters() {
+      const container = document.getElementById('roster-periods-container');
+      container.innerHTML = '';
+      for (const p in appState.rosters) {
+        const data = appState.rosters[p];
+        const card = document.createElement('div');
+        card.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid var(--border-color); padding:14px; border-radius:10px; margin-bottom:12px;";
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong>Period ${p}</strong>
+            <button class="btn-danger" onclick="deletePeriod('${p}')">Delete</button>
+          </div>
+          <label>Course Title:</label>
+          <input type="text" id="course-input-${p}" value="${data.course || ''}" onblur="saveSinglePeriod('${p}')" />
+          <label>Students (one per line):</label>
+          <textarea id="students-input-${p}" rows="4" onblur="saveSinglePeriod('${p}')">${(data.students || []).join('\n')}</textarea>
+          <button class="btn-header" style="font-size:0.8rem;" onclick="saveSinglePeriod('${p}')">💾 Save Period ${p}</button>
+        `;
+        container.appendChild(card);
+      }
     }
-  }
 
-  startEngine();
-  render();
-
-// --- TWO-WAY GOOGLE SHEETS SYNC & PER-PERIOD AUTOSAVE ---
-
-function showToast(msg) {
-  let toast = document.getElementById("kiosk-toast");
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "kiosk-toast";
-    toast.style.cssText = "position:fixed; bottom:24px; right:24px; background:#0f172a; color:#f8fafc; padding:12px 20px; border-radius:8px; z-index:999999; border:1px solid #334155; font-family:sans-serif; font-size:14px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5);";
-    document.body.appendChild(toast);
-  }
-  toast.innerText = msg;
-  toast.style.display = "block";
-  setTimeout(() => { toast.style.display = "none"; }, 3500);
-}
-
-function saveSinglePeriod(p) {
-  const courseEl = document.querySelector(`#course-period-${p}`) || document.querySelector(`input[data-period="${p}"]`);
-  const studentsEl = document.querySelector(`#students-period-${p}`) || document.querySelector(`textarea[data-period="${p}"]`);
-  
-  const course = (courseEl ? courseEl.value : `Period ${p}`).trim();
-  const rawText = studentsEl ? studentsEl.value : "";
-  const students = rawText.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-
-  const rosters = JSON.parse(localStorage.getItem('hallPassRosters') || '{}');
-  rosters[p] = { course, students };
-  localStorage.setItem('hallPassRosters', JSON.stringify(rosters));
-  showToast(`Period ${p} saved successfully!`);
-}
-
-function autoSaveSinglePeriod(p) {
-  saveSinglePeriod(p);
-}
-
-async function syncRostersFromGoogleSheet() {
-  const url = localStorage.getItem('webhookUrl') || document.querySelector('#webhook-url-input')?.value;
-  if (!url) {
-    alert("Please save your Google Sheets Webhook URL in Section 2 first.");
-    return;
-  }
-  showToast("Reading all period tabs from Google Sheet...");
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.success && data.rosters) {
-      localStorage.setItem('hallPassRosters', JSON.stringify(data.rosters));
-      showToast("Success! Synced all rosters from Google Sheet.");
-      setTimeout(() => { location.reload(); }, 1200);
-    } else {
-      alert("Sync failed: " + (data.error || "No tabs detected"));
+    function saveSinglePeriod(p) {
+      const course = document.getElementById(`course-input-${p}`)?.value.trim() || `Period ${p}`;
+      const text = document.getElementById(`students-input-${p}`)?.value || '';
+      const students = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      appState.rosters[p] = { course, students };
+      localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+      showToast(`Period ${p} saved!`);
     }
-  } catch (err) {
-    alert("Network error syncing from Sheet: " + err.message);
-  }
-}
 
-async function exportLogsToGoogleSheet() {
-  const url = localStorage.getItem('webhookUrl') || document.querySelector('#webhook-url-input')?.value;
-  const localLogs = JSON.parse(localStorage.getItem('hallPassLocalLog') || '[]');
-  if (!url) {
-    alert("Please save your Google Sheets Webhook URL in Section 2 first.");
-    return;
-  }
-  if (localLogs.length === 0) {
-    alert("No local logs stored to export.");
-    return;
-  }
-  showToast("Exporting local logs to Google Sheet...");
-  try {
-    await fetch(url, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "SYNC_LOCAL_LOGS",
-        entries: localLogs
-      })
-    });
-    showToast("Pass logs successfully exported to Google Sheet!");
-  } catch (err) {
-    alert("Export failed: " + err.message);
-  }
-}
+    function addNewPeriod() {
+      const nextNum = Object.keys(appState.rosters).length + 1;
+      appState.rosters[nextNum] = { course: `Period ${nextNum}`, students: [] };
+      localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+      renderTeacherRosters();
+    }
 
-</script>
+    function deletePeriod(p) {
+      if (confirm(`Delete Period ${p}?`)) {
+        delete appState.rosters[p];
+        localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+        renderTeacherRosters();
+      }
+    }
+
+    // --- PASS CREATION WIZARD ---
+    function showNewPassFlow() {
+      if (appState.activePasses.length >= appState.maxPasses) {
+        return alert(`Maximum active passes limit (${appState.maxPasses}) reached.`);
+      }
+      document.getElementById('view-active-passes').style.display = 'none';
+      document.getElementById('view-new-pass').style.display = 'block';
+      document.getElementById('step-reasons').style.display = 'grid';
+      document.getElementById('step-periods').style.display = 'none';
+      document.getElementById('step-students').style.display = 'none';
+      document.getElementById('wizard-step-title').innerText = "Select Reason / Razón";
+    }
+
+    function cancelPassFlow() {
+      document.getElementById('view-new-pass').style.display = 'none';
+      document.getElementById('view-active-passes').style.display = 'block';
+    }
+
+    function selectReason(reason) {
+      appState.currentWizard.reason = reason;
+      document.getElementById('step-reasons').style.display = 'none';
+      document.getElementById('wizard-step-title').innerText = "Select Period / Período";
+      
+      const pGrid = document.getElementById('step-periods');
+      pGrid.innerHTML = '';
+      for (const p in appState.rosters) {
+        const btn = document.createElement('button');
+        btn.className = 'tile-btn';
+        btn.innerText = `Period ${p} • ${appState.rosters[p].course}`;
+        btn.onclick = () => selectPeriod(p);
+        pGrid.appendChild(btn);
+      }
+      pGrid.style.display = 'grid';
+    }
+
+    function selectPeriod(p) {
+      appState.currentWizard.period = p;
+      document.getElementById('step-periods').style.display = 'none';
+      document.getElementById('wizard-step-title').innerText = `Select Student (Period ${p})`;
+
+      renderStudentSelectionGrid(appState.rosters[p].students);
+      document.getElementById('step-students').style.display = 'block';
+    }
+
+    function renderStudentSelectionGrid(students) {
+      const sGrid = document.getElementById('students-grid');
+      sGrid.innerHTML = '';
+      students.forEach(student => {
+        const btn = document.createElement('button');
+        btn.className = 'tile-btn';
+        btn.innerText = student;
+        btn.onclick = () => issuePass(student);
+        sGrid.appendChild(btn);
+      });
+    }
+
+    function filterStudentList() {
+      const query = document.getElementById('student-search-input').value.toLowerCase();
+      const p = appState.currentWizard.period;
+      const all = appState.rosters[p]?.students || [];
+      const filtered = all.filter(s => s.toLowerCase().includes(query));
+      renderStudentSelectionGrid(filtered);
+    }
+
+    function issuePass(student) {
+      const p = appState.currentWizard.period;
+      const course = appState.rosters[p]?.course || `Period ${p}`;
+      const now = new Date();
+      const pass = {
+        id: 'pass_' + Date.now(),
+        studentName: student,
+        period: p,
+        course: course,
+        reason: appState.currentWizard.reason,
+        departTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: now.getTime(),
+        graceMinutes: 5
+      };
+
+      appState.activePasses.push(pass);
+      localStorage.setItem('hallPassActive', JSON.stringify(appState.activePasses));
+
+      // Live Post to Google Sheets if connected
+      if (appState.webhookUrl) {
+        fetch(appState.webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "DEPART",
+            date: now.toLocaleDateString(),
+            period: pass.period,
+            course: pass.course,
+            studentName: pass.studentName,
+            reason: pass.reason,
+            departTime: pass.departTime,
+            expectedReturn: new Date(now.getTime() + 5*60000).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
+          })
+        }).catch(e => console.log(e));
+      }
+
+      cancelPassFlow();
+      renderActivePasses();
+    }
+
+    function markStudentBack(passId) {
+      const idx = appState.activePasses.findIndex(p => p.id === passId);
+      if (idx === -1) return;
+      const pass = appState.activePasses[idx];
+      const now = new Date();
+      const minutesOut = Math.round((now.getTime() - pass.timestamp) / 60000);
+      const isOverdue = minutesOut > pass.graceMinutes;
+
+      const logEntry = {
+        date: now.toLocaleDateString(),
+        period: pass.period,
+        course: pass.course,
+        studentName: pass.studentName,
+        reason: pass.reason,
+        departTime: pass.departTime,
+        actualReturnTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        totalMinutesOut: minutesOut + " min",
+        status: isOverdue ? "OVERDUE" : "ON TIME"
+      };
+
+      appState.logs.unshift(logEntry);
+      localStorage.setItem('hallPassLocalLog', JSON.stringify(appState.logs));
+
+      // Realtime Return post to Google Sheet
+      if (appState.webhookUrl) {
+        fetch(appState.webhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "RETURN",
+            studentName: pass.studentName,
+            actualReturnTime: logEntry.actualReturnTime,
+            totalMinutesOut: minutesOut,
+            finalStatus: logEntry.status,
+            overdueReason: "N/A"
+          })
+        }).catch(e => console.log(e));
+      }
+
+      appState.activePasses.splice(idx, 1);
+      localStorage.setItem('hallPassActive', JSON.stringify(appState.activePasses));
+      renderActivePasses();
+      renderLogsTable();
+    }
+
+    function renderActivePasses() {
+      const container = document.getElementById('active-passes-list');
+      document.getElementById('active-count').innerText = appState.activePasses.length;
+      if (appState.activePasses.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 20px;">No students currently out of room.</p>';
+        return;
+      }
+      container.innerHTML = '';
+      appState.activePasses.forEach(pass => {
+        const card = document.createElement('div');
+        card.className = 'active-pass-card';
+        card.innerHTML = `
+          <div>
+            <div style="font-weight:700; font-size:1.1rem;">${pass.studentName}</div>
+            <div style="color:var(--text-muted); font-size:0.85rem;">${pass.reason} • Period ${pass.period} (${pass.course})</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Departed: ${pass.departTime}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div id="timer-${pass.id}" class="timer-badge timer-ontime">05:00</div>
+            <button class="btn-return" onclick="markStudentBack('${pass.id}')">I'M BACK / REGRESÉ</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      updatePassTimers();
+    }
+
+    function updatePassTimers() {
+      const now = Date.now();
+      appState.activePasses.forEach(pass => {
+        const el = document.getElementById(`timer-${pass.id}`);
+        if (!el) return;
+        const elapsedSec = Math.floor((now - pass.timestamp) / 1000);
+        const remainSec = (pass.graceMinutes * 60) - elapsedSec;
+        if (remainSec >= 0) {
+          const m = String(Math.floor(remainSec / 60)).padStart(2, '0');
+          const s = String(remainSec % 60).padStart(2, '0');
+          el.innerText = `${m}:${s}`;
+          el.className = 'timer-badge timer-ontime';
+        } else {
+          const overSec = Math.abs(remainSec);
+          const m = String(Math.floor(overSec / 60)).padStart(2, '0');
+          const s = String(overSec % 60).padStart(2, '0');
+          el.innerText = `+${m}:${s}`;
+          el.className = 'timer-badge timer-overdue';
+        }
+      });
+    }
+
+    function renderLogsTable() {
+      const tbody = document.getElementById('logs-table-body');
+      document.getElementById('log-count').innerText = appState.logs.length;
+      tbody.innerHTML = '';
+      appState.logs.slice(0, 50).forEach(log => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${log.date} ${log.departTime}</td>
+          <td>P${log.period}</td>
+          <td>${log.studentName}</td>
+          <td>${log.reason}</td>
+          <td>${log.totalMinutesOut}</td>
+          <td style="color:${log.status==='ON TIME'?'var(--success)':'var(--danger)'}; font-weight:700;">${log.status}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function clearLocalLogs() {
+      if (confirm("Clear local audit logs? (Cloud Google Sheet will keep its copies)")) {
+        appState.logs = [];
+        localStorage.setItem('hallPassLocalLog', JSON.stringify([]));
+        renderLogsTable();
+      }
+    }
+
+    // --- AUTH MODAL ---
+    function openTeacherAuth() { document.getElementById('auth-modal').style.display = 'flex'; }
+    function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
+    function verifyTeacherPin() {
+      const input = document.getElementById('teacher-pin-input').value;
+      if (input === appState.pin) {
+        closeAuthModal();
+        document.getElementById('teacher-pin-input').value = '';
+        document.getElementById('view-active-passes').style.display = 'none';
+        document.getElementById('view-new-pass').style.display = 'none';
+        document.getElementById('view-teacher-portal').style.display = 'block';
+      } else {
+        alert("Incorrect PIN");
+      }
+    }
+    function closeTeacherPortal() {
+      document.getElementById('view-teacher-portal').style.display = 'none';
+      document.getElementById('view-active-passes').style.display = 'block';
+    }
+  </script>
 </body>
 </html>
