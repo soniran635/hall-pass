@@ -427,7 +427,34 @@
       border-color: #38bdf8;
       color: #fff;
     }
-  </style>
+  
+.locked-kiosk-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(34, 197, 94, 0.2) !important;
+  border: 1px solid #22c55e !important;
+  color: #22c55e !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  margin-left: 12px !important;
+  vertical-align: middle !important;
+  position: static !important;
+  transform: none !important;
+}
+.kiosk-header-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 8px 16px !important;
+  box-sizing: border-box !important;
+}
+
+</style>
 </head>
 <body>
 
@@ -1396,6 +1423,90 @@
 
   startEngine();
   render();
+
+// --- TWO-WAY GOOGLE SHEETS SYNC & PER-PERIOD AUTOSAVE ---
+
+function showToast(msg) {
+  let toast = document.getElementById("kiosk-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "kiosk-toast";
+    toast.style.cssText = "position:fixed; bottom:24px; right:24px; background:#0f172a; color:#f8fafc; padding:12px 20px; border-radius:8px; z-index:999999; border:1px solid #334155; font-family:sans-serif; font-size:14px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5);";
+    document.body.appendChild(toast);
+  }
+  toast.innerText = msg;
+  toast.style.display = "block";
+  setTimeout(() => { toast.style.display = "none"; }, 3500);
+}
+
+function saveSinglePeriod(p) {
+  const courseEl = document.querySelector(`#course-period-${p}`) || document.querySelector(`input[data-period="${p}"]`);
+  const studentsEl = document.querySelector(`#students-period-${p}`) || document.querySelector(`textarea[data-period="${p}"]`);
+  
+  const course = (courseEl ? courseEl.value : `Period ${p}`).trim();
+  const rawText = studentsEl ? studentsEl.value : "";
+  const students = rawText.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+  const rosters = JSON.parse(localStorage.getItem('hallPassRosters') || '{}');
+  rosters[p] = { course, students };
+  localStorage.setItem('hallPassRosters', JSON.stringify(rosters));
+  showToast(`Period ${p} saved successfully!`);
+}
+
+function autoSaveSinglePeriod(p) {
+  saveSinglePeriod(p);
+}
+
+async function syncRostersFromGoogleSheet() {
+  const url = localStorage.getItem('webhookUrl') || document.querySelector('#webhook-url-input')?.value;
+  if (!url) {
+    alert("Please save your Google Sheets Webhook URL in Section 2 first.");
+    return;
+  }
+  showToast("Reading all period tabs from Google Sheet...");
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success && data.rosters) {
+      localStorage.setItem('hallPassRosters', JSON.stringify(data.rosters));
+      showToast("Success! Synced all rosters from Google Sheet.");
+      setTimeout(() => { location.reload(); }, 1200);
+    } else {
+      alert("Sync failed: " + (data.error || "No tabs detected"));
+    }
+  } catch (err) {
+    alert("Network error syncing from Sheet: " + err.message);
+  }
+}
+
+async function exportLogsToGoogleSheet() {
+  const url = localStorage.getItem('webhookUrl') || document.querySelector('#webhook-url-input')?.value;
+  const localLogs = JSON.parse(localStorage.getItem('hallPassLocalLog') || '[]');
+  if (!url) {
+    alert("Please save your Google Sheets Webhook URL in Section 2 first.");
+    return;
+  }
+  if (localLogs.length === 0) {
+    alert("No local logs stored to export.");
+    return;
+  }
+  showToast("Exporting local logs to Google Sheet...");
+  try {
+    await fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "SYNC_LOCAL_LOGS",
+        entries: localLogs
+      })
+    });
+    showToast("Pass logs successfully exported to Google Sheet!");
+  } catch (err) {
+    alert("Export failed: " + err.message);
+  }
+}
+
 </script>
 </body>
 </html>
