@@ -313,8 +313,10 @@
       </div>
       <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Follow these steps to connect your sheet in 2 minutes:</p>
       <ol style="margin-left:20px; font-size:0.85rem; line-height:1.6;">
-        <li>Open your Google Sheet on your computer $ightarrow$ click <strong>Extensions ➔ Apps Script</strong>.</li>
-        <li>Click <strong>Deploy ➔ New deployment</strong> $ightarrow$ Select type <strong>Web app</strong>.</li>
+        <li>Open your Google Sheet on your computer $
+ightarrow$ click <strong>Extensions ➔ Apps Script</strong>.</li>
+        <li>Click <strong>Deploy ➔ New deployment</strong> $
+ightarrow$ Select type <strong>Web app</strong>.</li>
         <li>Set <strong>Who has access</strong> to <strong>Anyone</strong>, then click <strong>Deploy</strong>.</li>
         <li>Copy the Web app URL (starts with <code>https://script.google.com/macros/s/.../exec</code>).</li>
         <li>Paste it into Section 1 on this device, tap <strong>Save URL</strong>, then tap <strong>Pull Rosters</strong>!</li>
@@ -845,7 +847,7 @@
           const p = parts[0].replace(/[^0-9]/g, '') || "1";
           const course = parts.length >= 3 ? parts[1].replace(/"/g, '').trim() : `Period ${p}`;
           const student = (parts.length >= 3 ? parts[2] : parts[1]).replace(/"/g, '').trim();
-          if (student && !/^(student|name)/i.test(student)) {
+          if (student && !/^(student|name|#|no\.?|id)/i.test(student) && !/^\d+$/.test(student) && !/^\d+\s+students?$/i.test(student)) {
             if (!newRosters[p]) newRosters[p] = { course, students: [] };
             newRosters[p].students.push(student);
           }
