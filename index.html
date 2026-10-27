@@ -761,5 +761,54 @@
       document.getElementById('view-active-passes').style.display = 'block';
     }
   </script>
+
+  <!-- Non-Tech Teacher Setup Guide Modal -->
+  <div id="guide-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width:580px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h2 style="margin:0; font-size:1.3rem;">📋 Quick Google Sheets Setup Guide</h2>
+        <button class="btn-header" onclick="closeGuideModal()">✕ Close</button>
+      </div>
+      
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:14px;">
+        Follow these 3 simple steps to connect this tablet directly to your personal Google Sheet. No coding required!
+      </p>
+
+      <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:12px;">
+        <strong style="color:var(--primary); font-size:1rem;">Step 1: Open Your Sheet & Apps Script</strong>
+        <p style="font-size:0.85rem; margin-top:6px; color:var(--text-main);">
+          1. Open your <strong>Hall-Pass Google Sheet</strong> on your computer.<br>
+          2. In the top menu bar, click <strong>Extensions ➔ Apps Script</strong>.
+        </p>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:12px;">
+        <strong style="color:var(--primary); font-size:1rem;">Step 2: Deploy Your Webhook Link</strong>
+        <p style="font-size:0.85rem; margin-top:6px; color:var(--text-main);">
+          1. In the Apps Script tab, click the blue <strong>Deploy</strong> button (top-right) ➔ <strong>New deployment</strong>.<br>
+          2. Click the gear icon next to "Select type" and choose <strong>Web app</strong>.<br>
+          3. Change <strong>Who has access</strong> to <strong>Anyone</strong> (this allows the tablet to securely log passes without asking students to log in).<br>
+          4. Click <strong>Deploy</strong> and copy the <strong>Web app URL</strong> (it starts with <code>https://script.google.com/macros/s/.../exec</code>).
+        </p>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:16px;">
+        <strong style="color:var(--primary); font-size:1rem;">Step 3: Connect to Tablet</strong>
+        <p style="font-size:0.85rem; margin-top:6px; color:var(--text-main);">
+          1. Paste that URL into the box below and tap <strong>Save URL</strong>.<br>
+          2. Tap <strong>📥 Pull Rosters from Sheet</strong>. Your periods and student names will instantly sync over Wi-Fi!<br>
+          <em style="color:var(--warning); font-size:0.8rem;">Note: Avoid link shorteners (like tinyurl) because browsers block their automatic security redirects. Use the full script.google.com URL.</em>
+        </p>
+      </div>
+
+      <button class="btn-primary" style="width:100%;" onclick="closeGuideModal()">Got it, let's sync!</button>
+    </div>
+  </div>
+
+  <script>
+    function openGuideModal() { document.getElementById('guide-modal').style.display = 'flex'; }
+    function closeGuideModal() { document.getElementById('guide-modal').style.display = 'none'; }
+  </script>
+
 </body>
 </html>
