@@ -418,6 +418,71 @@ ightarrow$ Select type <strong>Web app</strong>.</li>
     }
 
     function syncRostersFromGoogleSheet() {
+      let rawUrl = (document.getElementById('webhook-url-input')?.value || appState.webhookUrl || '').trim();
+      if (!rawUrl) return alert("Save Webhook URL first in Section 1.");
+      appState.webhookUrl = rawUrl;
+      localStorage.setItem('webhookUrl', rawUrl);
+      showToast("Pulling roster tabs from Google Sheet...");
+
+      const cb = 'roster_cb_' + Date.now();
+      window[cb] = function(data) {
+        delete window[cb];
+        if (data && data.success && data.rosters) {
+          appState.rosters = data.rosters;
+          localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+          renderTeacherRosters();
+          showToast("Success! Rosters pulled from Google Sheet.");
+        } else {
+          alert("Error from sheet: " + (data ? data.error : "Unknown"));
+        }
+      };
+
+      const timeoutId = setTimeout(() => {
+        if (window[cb]) {
+          delete window[cb];
+          fetch(rawUrl, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "GET_ROSTERS" })
+          }).then(r => r.json()).then(res => {
+            if (res && res.success && res.rosters) {
+              appState.rosters = res.rosters;
+              localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+              renderTeacherRosters();
+              showToast("Success! Rosters pulled from Google Sheet.");
+            }
+          }).catch(err => {
+            alert("Could not reach Google Sheet. Ensure your Webhook is deployed with 'Anyone' access and Wi-Fi is active.");
+          });
+        }
+      }, 4000);
+
+      const script = document.createElement('script');
+      const sep = rawUrl.includes('?') ? '&' : '?';
+      script.src = rawUrl + sep + 'callback=' + cb;
+      script.onload = () => clearTimeout(timeoutId);
+      script.onerror = () => {
+        clearTimeout(timeoutId);
+        if (window[cb]) {
+          delete window[cb];
+          fetch(rawUrl, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "GET_ROSTERS" })
+          }).then(r => r.json()).then(res => {
+            if (res && res.success && res.rosters) {
+              appState.rosters = res.rosters;
+              localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
+              renderTeacherRosters();
+              showToast("Success! Rosters pulled from Google Sheet.");
+            }
+          }).catch(e => alert("Connection error on tablet. Verify Webhook URL."));
+        }
+      };
+      document.body.appendChild(script);
+      return;
+    }
+    function _dummyUnusedSync() {
       if (!appState.webhookUrl) return alert("Save Webhook URL first in Section 1.");
       showToast("Pulling roster tabs from Google Sheet...");
 
@@ -549,6 +614,11 @@ ightarrow$ Select type <strong>Web app</strong>.</li>
     }
 
     function confirmIssuePass(student) {
+      const activeMatch = appState.activePasses.find(p => p.studentName.trim().toLowerCase() === student.trim().toLowerCase());
+      if (activeMatch) {
+        alert(`${student} is already out on a pass (${activeMatch.reason})! They must return before another pass can be issued.`);
+        return;
+      }
       // Check if student already has an active pass out
       const alreadyOut = appState.activePasses.find(p => p.studentName.toLowerCase() === student.toLowerCase());
       if (alreadyOut) {
