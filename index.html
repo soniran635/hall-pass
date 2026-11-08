@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Classroom Hall Pass Kiosk</title>
-  <!-- SheetJS for Excel (.xlsx / .xls) parsing -->
+  <!-- SheetJS for native Excel (.xlsx / .xls) cell-array parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- PDF.js for PDF roster parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -75,7 +75,7 @@
     .tile-btn:active { background: var(--primary); }
 
     label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
-    input[type="text"], input[type="password"], textarea, select {
+    input[type="text"], input[type="password"], input[type="number"], textarea, select {
       width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color);
       color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.95rem; margin-bottom: 12px;
     }
@@ -169,17 +169,17 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
           <h3>1. Two-Way Google Sheets Webhook Sync</h3>
           <div style="display:flex; gap:6px;">
-            <button type="button" class="btn-header" onclick="openQrModal()">📱 Send URL to Tablet (QR / Link)</button>
+            <button type="button" class="btn-header" onclick="openQrModal()">📧 Email / Share Setup Link to Tablet</button>
             <button type="button" class="btn-header" style="background:#3b82f6; color:#fff;" onclick="openGuideModal()">📖 Setup Guide</button>
           </div>
         </div>
-        <label>Google Apps Script Webhook URL:</label>
-        <input type="text" id="webhook-url-input" placeholder="Paste your https://script.google.com/macros/s/.../exec link here" />
+        <label>Google Apps Script Webhook URL (or Script ID):</label>
+        <input type="text" id="webhook-url-input" placeholder="Paste https://script.google.com/macros/s/.../exec" />
         <div class="btn-group">
           <button type="button" class="btn-primary" onclick="saveWebhookUrl()">Save URL</button>
           <button type="button" class="btn-header" onclick="testSheetConnection()">Ping Connection</button>
           <button type="button" class="btn-primary" onclick="syncRostersFromGoogleSheet()">📥 Pull Rosters from Sheet</button>
-          <button type="button" class="btn-success" onclick="pushLogsToGoogleSheet()">📤 Push Pass Logs to Sheet</button>
+          <button type="button" class="btn-success" onclick="pushLogsToGoogleSheet()">📤 Push Unsynced Logs (<span id="unsynced-count">0</span>)</button>
         </div>
       </div>
 
@@ -218,17 +218,55 @@
         <div id="roster-periods-container"></div>
       </div>
 
-      <!-- 4. Audit Logs -->
+      <!-- 4. Audit Logs + Manual Entry Option -->
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
           <h3>4. Local Pass Audit Logs (<span id="log-count">0</span> entries)</h3>
           <div class="btn-group" style="margin-top:0;">
+            <button type="button" class="btn-primary" onclick="toggleManualLogForm()">➕ Manually Add Pass Entry</button>
             <button type="button" class="btn-header" onclick="downloadLogsCSV()">💾 Download CSV</button>
             <button type="button" class="btn-header" onclick="copyLogsCSV()">📋 Copy Logs CSV</button>
-            <button type="button" class="btn-success" onclick="pushLogsToGoogleSheet()">📤 Send to Sheet</button>
+            <button type="button" class="btn-success" onclick="pushLogsToGoogleSheet()">📤 Send Unsynced to Sheet</button>
             <button type="button" class="btn-danger" onclick="clearLocalLogs()">Clear Logs</button>
           </div>
         </div>
+
+        <!-- Manual Pass Entry Form (For Teacher if student missed logging) -->
+        <div id="manual-log-form" style="display:none; background:rgba(59, 130, 246, 0.1); border:1px solid var(--primary); padding:14px; border-radius:10px; margin-bottom:14px;">
+          <h4 style="margin-bottom:10px; color:var(--text-main);">➕ Manually Log a Missed Hall Pass (Pushes Only This Entry to Sheet)</h4>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px;">
+            <div>
+              <label>Period:</label>
+              <select id="manual-period" onchange="populateManualStudents()" style="margin-bottom:0;"></select>
+            </div>
+            <div>
+              <label>Student Name:</label>
+              <input type="text" id="manual-student" list="manual-student-list" placeholder="Select or type name..." style="margin-bottom:0;" />
+              <datalist id="manual-student-list"></datalist>
+            </div>
+            <div>
+              <label>Reason:</label>
+              <select id="manual-reason" style="margin-bottom:0;">
+                <option value="Bathroom">Bathroom</option>
+                <option value="Hallway">Hallway</option>
+                <option value="Miscellaneous">Miscellaneous</option>
+              </select>
+            </div>
+            <div>
+              <label>Depart Time:</label>
+              <input type="text" id="manual-depart" placeholder="e.g. 1:15 PM" style="margin-bottom:0;" />
+            </div>
+            <div>
+              <label>Duration (mins):</label>
+              <input type="number" id="manual-duration" value="4" min="1" style="margin-bottom:0;" />
+            </div>
+          </div>
+          <div class="btn-group" style="margin-top:12px;">
+            <button type="button" class="btn-success" onclick="submitManualLogEntry()">✅ Save & Push This Entry to Google Sheet</button>
+            <button type="button" class="btn-header" onclick="toggleManualLogForm()">Cancel</button>
+          </div>
+        </div>
+
         <div class="table-container">
           <table id="logs-table">
             <thead>
@@ -239,6 +277,7 @@
                 <th>Reason</th>
                 <th>Duration</th>
                 <th onclick="sortLogs('status')" style="cursor:pointer;">Status ⬍</th>
+                <th>Sync</th>
               </tr>
             </thead>
             <tbody id="logs-table-body"></tbody>
@@ -264,18 +303,21 @@
     </div>
   </div>
 
-  <!-- Dynamic QR / Magic Setup Link Modal -->
+  <!-- Setup Link / Email / QR Modal (Works on Fire Tablet without Camera!) -->
   <div id="qr-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width:480px; text-align:center;">
-      <h3>📱 Easy Tablet Setup (No Typing!)</h3>
-      <p style="color:var(--text-muted); font-size:0.85rem; margin:8px 0 14px;">
-        Scan this QR code with your tablet or open the Magic Setup Link below. It automatically configures your Webhook URL and pulls your rosters!
+    <div class="modal-content" style="max-width:500px; text-align:center;">
+      <h3>📧 Easy Tablet Setup (No Typing & No QR Needed!)</h3>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin:8px 0 12px;">
+        <strong>For Fire Tablet 8 (No QR Camera):</strong> Click <strong>"Email Link to Myself"</strong> below, open your email on the tablet, and tap the link! Or scan the QR code if using an iPad.
       </p>
-      <div id="qr-image-container" style="background:#fff; padding:16px; border-radius:12px; display:inline-block; margin-bottom:12px;"></div>
-      <label>Magic Setup Link:</label>
+      <label>One-Click Magic Setup Link:</label>
       <input type="text" id="magic-link-input" readonly />
-      <div class="btn-group" style="justify-content:center;">
+      <div class="btn-group" style="justify-content:center; margin-bottom:14px;">
         <button type="button" class="btn-primary" onclick="copyMagicLink()">📋 Copy Setup Link</button>
+        <button type="button" class="btn-success" onclick="emailMagicLink()">✉️ Email Link to Myself</button>
+      </div>
+      <div id="qr-image-container" style="background:#fff; padding:12px; border-radius:12px; display:inline-block; margin-bottom:12px;"></div>
+      <div>
         <button type="button" class="btn-header" onclick="closeQrModal()">Close</button>
       </div>
     </div>
@@ -286,11 +328,11 @@
     <div class="modal-content">
       <h3>Smart Import Class Rosters</h3>
       <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:10px;">
-        Upload any Excel (<code>.xlsx/.xls</code>), CSV, PDF, or Text file, or paste directly from your spreadsheet. Numbers and headers like <code>#</code> or <code>23 students</code> are automatically stripped and mapped to the matching period!
+        Upload any Excel (<code>.xlsx/.xls</code>), CSV, PDF, or Text file, or paste directly. Names with commas (like <code>Alarcon Quintana, Alex</code>) are preserved 100% intact!
       </p>
       
       <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:10px;">
-        <label>1. Target Period (Auto-Detects from file/sheet by default):</label>
+        <label>1. Target Period (Auto-Detects all tabs from Excel by default):</label>
         <select id="import-target-period" style="margin-bottom:6px;">
           <option value="auto">✨ Auto-Detect Period & Course Title</option>
           <option value="1">Period 1</option>
@@ -307,7 +349,7 @@
       </div>
 
       <label>3. Preview / Paste Data Directly:</label>
-      <textarea id="import-textarea" rows="8" placeholder="Paste spreadsheet rows here or select a file above..."></textarea>
+      <textarea id="import-textarea" rows="8" placeholder="Select an Excel/CSV file above or paste rows here..."></textarea>
 
       <div class="btn-group">
         <button type="button" class="btn-primary" onclick="processPastedRoster()">Import & Map Roster</button>
@@ -339,7 +381,7 @@
         <li>Open your Google Sheet on your computer ➔ click <strong>Extensions ➔ Apps Script</strong>.</li>
         <li>Click <strong>Deploy ➔ New deployment ➔ Web app</strong> (or <strong>Manage deployments ➔ Edit ➔ New version</strong>).</li>
         <li>Ensure <strong>Who has access</strong> is set to <strong>Anyone</strong>, then click <strong>Deploy</strong> and copy the URL.</li>
-        <li>Paste the URL into Section 1 on your laptop, then click <strong>📱 Send URL to Tablet (QR / Link)</strong> to configure your tablet without typing!</li>
+        <li>Paste the URL into Section 1 on your laptop, then click <strong>📧 Email / Share Setup Link to Tablet</strong> to open it on your Fire Tablet or iPad with zero typing!</li>
       </ol>
       <button type="button" class="btn-primary" style="width:100%; margin-top:16px;" onclick="closeGuideModal()">Close Guide</button>
     </div>
@@ -355,6 +397,10 @@
     function cleanDynamicWebhookUrl(url) {
       if (!url) return "";
       let clean = url.trim();
+      // If user only pasted the Script ID (e.g. AKfycb...), build the full URL automatically!
+      if (/^AKfycb[a-zA-Z0-9_-]+$/.test(clean)) {
+        return "https://script.google.com/macros/s/" + clean + "/exec";
+      }
       if (clean.includes("script.google.com/macros/s/") && !clean.endsWith("/exec") && !clean.includes("?")) {
         clean = clean.replace(/\/+$/, "") + "/exec";
       }
@@ -410,7 +456,7 @@
       const toast = document.getElementById('kiosk-toast');
       toast.innerText = msg;
       toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 3500);
+      setTimeout(() => { toast.style.display = 'none'; }, 3800);
     }
 
     function updateKioskBadge() {
@@ -458,7 +504,7 @@
       const magicUrl = window.location.origin + window.location.pathname + "?webhook=" + encodeURIComponent(appState.webhookUrl);
       document.getElementById('magic-link-input').value = magicUrl;
       const qrContainer = document.getElementById('qr-image-container');
-      qrContainer.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(magicUrl) + '" alt="Setup QR Code" style="display:block; width:200px; height:200px;" />';
+      qrContainer.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(magicUrl) + '" alt="Setup QR Code" style="display:block; width:180px; height:180px;" />';
       document.getElementById('qr-modal').style.display = 'flex';
     }
     function closeQrModal() { document.getElementById('qr-modal').style.display = 'none'; }
@@ -466,7 +512,13 @@
       const inp = document.getElementById('magic-link-input');
       inp.select();
       document.execCommand('copy');
-      showToast("Magic Setup Link copied!");
+      showToast("Magic Setup Link copied! Send it via Email or Google Doc to open on your tablet.");
+    }
+    function emailMagicLink() {
+      const magicUrl = document.getElementById('magic-link-input').value;
+      const subject = encodeURIComponent("Hall Pass Kiosk Setup Link");
+      const body = encodeURIComponent("Open this link on your classroom tablet to automatically configure the Google Sheet Webhook and pull rosters:\n\n" + magicUrl);
+      window.location.href = "mailto:?subject=" + subject + "&body=" + body;
     }
 
     async function testSheetConnection() {
@@ -530,37 +582,135 @@
       document.body.appendChild(script);
     }
 
+    // --- ZERO-DUPLICATE PUSH (ONLY PUSHES UNSYNCED / MANUAL LOGS!) ---
     let isPushingLogs = false;
     async function pushLogsToGoogleSheet() {
       saveWebhookUrl();
       if (!appState.webhookUrl) return alert("Please enter your Google Webhook URL first.");
-      if (appState.logs.length === 0) return alert("No local logs recorded to push.");
+      if (appState.logs.length === 0) return alert("No local logs recorded.");
+
+      // Filter ONLY logs that haven't already been auto-synced to the Google Sheet!
+      const unsyncedLogs = appState.logs.filter(item => !item.syncedToSheet);
+      if (unsyncedLogs.length === 0) {
+        showToast("All pass logs are already synced to Google Sheets! Zero duplicates sent.");
+        return;
+      }
+
       if (isPushingLogs) return showToast("Sync already in progress...");
-
       isPushingLogs = true;
-      showToast("Syncing unique pass logs to Google Sheet...");
-      try {
-        const uniqueMap = {};
-        const uniqueLogs = [];
-        appState.logs.forEach(item => {
-          const key = ((item.studentName || '').toLowerCase().trim()) + '_' + item.date + '_' + item.departTime;
-          if (!uniqueMap[key]) {
-            uniqueMap[key] = true;
-            uniqueLogs.push(item);
-          }
-        });
+      showToast("Pushing " + unsyncedLogs.length + " unsynced log(s) to Google Sheet...");
 
+      try {
         await fetch(appState.webhookUrl, {
           method: "POST", mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "SYNC_LOCAL_LOGS", entries: uniqueLogs })
+          body: JSON.stringify({ action: "SYNC_LOCAL_LOGS", entries: unsyncedLogs })
         });
-        showToast("Pass logs synced (duplicates automatically skipped)!");
+        // Mark all as synced so clicking the button again never duplicates them!
+        appState.logs.forEach(item => { item.syncedToSheet = true; });
+        localStorage.setItem('hallPassLocalLog', JSON.stringify(appState.logs));
+        renderLogsTable();
+        showToast("Synced " + unsyncedLogs.length + " new entry(s) to Google Sheet!");
       } catch (err) {
         alert("Push failed: " + err.message);
       } finally {
-        setTimeout(() => { isPushingLogs = false; }, 2000);
+        setTimeout(() => { isPushingLogs = false; }, 1500);
       }
+    }
+
+    // --- TEACHER MANUAL LOG ENTRY (FOR MISSED PASSES) ---
+    function toggleManualLogForm() {
+      const form = document.getElementById('manual-log-form');
+      if (form.style.display === 'none') {
+        const pSelect = document.getElementById('manual-period');
+        pSelect.innerHTML = '';
+        const pKeys = Object.keys(appState.rosters);
+        if (pKeys.length === 0) {
+          pSelect.innerHTML = '<option value="1">Period 1</option>';
+        } else {
+          pKeys.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            opt.innerText = "Period " + p + " (" + (appState.rosters[p].course || '') + ")";
+            pSelect.appendChild(opt);
+          });
+        }
+        populateManualStudents();
+        document.getElementById('manual-depart').value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        form.style.display = 'block';
+      } else {
+        form.style.display = 'none';
+      }
+    }
+
+    function populateManualStudents() {
+      const p = document.getElementById('manual-period').value;
+      const dList = document.getElementById('manual-student-list');
+      dList.innerHTML = '';
+      const students = appState.rosters[p]?.students || [];
+      students.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        dList.appendChild(opt);
+      });
+    }
+
+    async function submitManualLogEntry() {
+      const p = document.getElementById('manual-period').value || '1';
+      const student = document.getElementById('manual-student').value.trim();
+      const reason = document.getElementById('manual-reason').value;
+      const departTime = document.getElementById('manual-depart').value.trim() || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const durationMins = parseInt(document.getElementById('manual-duration').value || '4', 10);
+
+      if (!student) return alert("Please select or enter a student name.");
+
+      const now = new Date();
+      const course = appState.rosters[p]?.course || ("Period " + p);
+      const isOverdue = durationMins > 5;
+
+      const manualEntry = {
+        id: 'manual_' + Date.now(),
+        timestamp: now.getTime(),
+        date: now.toLocaleDateString(),
+        period: p,
+        course: course,
+        studentName: student,
+        reason: reason,
+        departTime: departTime,
+        expectedReturn: "-",
+        actualReturnTime: "Manual Entry",
+        totalMinutesOut: durationMins + " min",
+        status: isOverdue ? "OVERDUE" : "ON TIME",
+        syncedToSheet: false
+      };
+
+      // Check if identical record already exists locally
+      const exists = appState.logs.some(l => l.studentName.toLowerCase() === student.toLowerCase() && l.date === manualEntry.date && l.departTime.toLowerCase() === departTime.toLowerCase());
+      if (exists) {
+        return alert("A pass for " + student + " at " + departTime + " is already logged!");
+      }
+
+      if (appState.webhookUrl) {
+        try {
+          await fetch(appState.webhookUrl, {
+            method: "POST", mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "SYNC_LOCAL_LOGS", entries: [manualEntry] })
+          });
+          manualEntry.syncedToSheet = true;
+          showToast("Manual entry added & pushed to Google Sheet!");
+        } catch (e) {
+          showToast("Saved locally (will sync when online).");
+        }
+      } else {
+        showToast("Manual entry saved to local audit log!");
+      }
+
+      appState.logs.unshift(manualEntry);
+      localStorage.setItem('hallPassLocalLog', JSON.stringify(appState.logs));
+      document.getElementById('manual-student').value = '';
+      document.getElementById('manual-log-form').style.display = 'none';
+      renderLogsTable();
     }
 
     function saveNewPin() {
@@ -663,13 +813,12 @@
         departTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         date: now.toLocaleDateString(),
         timestamp: now.getTime(),
-        graceMinutes: 5
+        graceMinutes: 5,
+        departSynced: false
       };
 
-      appState.activePasses.push(pass);
-      localStorage.setItem('hallPassActive', JSON.stringify(appState.activePasses));
-
       if (appState.webhookUrl) {
+        pass.departSynced = true;
         fetch(appState.webhookUrl, {
           method: "POST", mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -684,8 +833,11 @@
             departTime: pass.departTime,
             expectedReturn: new Date(now.getTime() + 5*60000).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
           })
-        }).catch(() => {});
+        }).catch(() => { pass.departSynced = false; });
       }
+
+      appState.activePasses.push(pass);
+      localStorage.setItem('hallPassActive', JSON.stringify(appState.activePasses));
 
       cancelPassFlow();
       renderActivePasses();
@@ -717,18 +869,12 @@
         departTime: pass.departTime,
         actualReturnTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         totalMinutesOut: minutesOut + " min",
-        status: isOverdue ? "OVERDUE" : "ON TIME"
+        status: isOverdue ? "OVERDUE" : "ON TIME",
+        syncedToSheet: false
       };
 
-      const dupIdx = appState.logs.findIndex(l => l.studentName === logEntry.studentName && l.date === logEntry.date && l.departTime === logEntry.departTime);
-      if (dupIdx === -1) {
-        appState.logs.unshift(logEntry);
-      } else {
-        appState.logs[dupIdx] = logEntry;
-      }
-      localStorage.setItem('hallPassLocalLog', JSON.stringify(appState.logs));
-
       if (appState.webhookUrl) {
+        logEntry.syncedToSheet = true;
         fetch(appState.webhookUrl, {
           method: "POST", mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -741,8 +887,16 @@
             finalStatus: logEntry.status,
             overdueReason: "N/A"
           })
-        }).catch(() => {});
+        }).catch(() => { logEntry.syncedToSheet = false; });
       }
+
+      const dupIdx = appState.logs.findIndex(l => l.studentName === logEntry.studentName && l.date === logEntry.date && l.departTime === logEntry.departTime);
+      if (dupIdx === -1) {
+        appState.logs.unshift(logEntry);
+      } else {
+        appState.logs[dupIdx] = logEntry;
+      }
+      localStorage.setItem('hallPassLocalLog', JSON.stringify(appState.logs));
 
       appState.activePasses.splice(idx, 1);
       localStorage.setItem('hallPassActive', JSON.stringify(appState.activePasses));
@@ -862,6 +1016,31 @@
       }
     }
 
+    // --- QUOTE-AWARE CSV LINE SPLITTER (Preserves "Alarcon Quintana, Alex" as ONE cell!) ---
+    function splitCsvLinePreservingQuotes(line) {
+      if (line.includes('\t')) {
+        return line.split('\t').map(s => s.replace(/^"|"$/g, '').trim());
+      }
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current.trim());
+      return result.map(s => s.replace(/^"|"$/g, '').trim());
+    }
+
+    // --- EXCEL / CSV / PDF UPLOAD HANDLER ---
+    // Uses Tab-Separated Values (\t) when converting Excel cells so commas inside student names NEVER split!
     async function handleRosterFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -883,11 +1062,18 @@
           workbook.SheetNames.forEach(sheetName => {
             if (/log|pass|audit|history/i.test(sheetName)) return;
             const sheet = workbook.Sheets[sheetName];
-            const csv = XLSX.utils.sheet_to_csv(sheet);
-            combinedText += "--- " + sheetName + " ---\n" + csv + "\n";
+            // Read as 2D array of cells and join with TAB (\t) so commas in "Alarcon Quintana, Alex" are never split!
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+            combinedText += "--- " + sheetName + " ---\n";
+            rows.forEach(r => {
+              const cleanCells = r.map(c => String(c || "").replace(/\r?\n/g, " ").trim());
+              if (cleanCells.some(c => c.length > 0)) {
+                combinedText += cleanCells.join("\t") + "\n";
+              }
+            });
           });
           document.getElementById('import-textarea').value = combinedText;
-          showToast("Excel file parsed! Click 'Import & Map Roster'.");
+          showToast("Excel file loaded cleanly! Click 'Import & Map Roster'.");
         };
         reader.readAsArrayBuffer(file);
       } else if (fileName.match(/\.pdf$/i) && window.pdfjsLib) {
@@ -920,6 +1106,7 @@
       const targetSelect = document.getElementById('import-target-period').value;
       let currentPeriod = targetSelect !== 'auto' ? targetSelect : "1";
       let currentCourse = appState.rosters[currentPeriod]?.course || ("Period " + currentPeriod);
+      let insideSheetBlock = false;
 
       const updatedRosters = JSON.parse(JSON.stringify(appState.rosters));
       const clearedPeriods = {};
@@ -929,8 +1116,10 @@
         const line = rawLine.trim();
         if (!line) return;
 
+        // Detect sheet separator "--- Period X ---"
         const sepMatch = line.match(/^---\s*(.+?)\s*---$/i);
         if (sepMatch) {
+          insideSheetBlock = true;
           const tabName = sepMatch[1].trim();
           const pNum = tabName.match(/\d+/);
           currentPeriod = pNum ? pNum[0] : tabName;
@@ -938,13 +1127,15 @@
           return;
         }
 
-        const parts = (line.includes('\t') ? line.split('\t') : line.split(',')).map(s => s.replace(/^"|"$/g, '').trim());
+        const parts = splitCsvLinePreservingQuotes(line);
         const colA = parts[0] || "";
         const colB = parts[1] || "";
         const colC = parts[2] || "";
 
+        // Detect Top Header Row like "Period 6 | College Math Preparation"
         const headerPeriodMatch = colA.match(/^period\s*(\d+)$/i);
         if (headerPeriodMatch) {
+          insideSheetBlock = true;
           if (targetSelect === 'auto') currentPeriod = headerPeriodMatch[1];
           if (colB && !/^\d+$/.test(colB) && !/students?$/i.test(colB)) {
             currentCourse = colB;
@@ -958,10 +1149,13 @@
           return;
         }
 
+        // Ignore headers and counts ("#", "Student Name", "22 students")
         if (/^(#|no\.?|id|student\s*name|name)$/i.test(colA) || /^(student\s*name|name)$/i.test(colB)) return;
         if (/^\d+\s*students?$/i.test(colA) || /^\d+\s*students?$/i.test(colB)) return;
 
-        if (parts.length >= 3 && /^\d+$/.test(colA) && colB && colC && !/^\d+$/.test(colB)) {
+        // Format A: Explicit 3-column CSV (Period, Course, Student Name) ONLY when NOT inside a single-period sheet block
+        // and only when Col B looks like a course name rather than a surname with a comma!
+        if (!insideSheetBlock && parts.length >= 3 && /^\d+$/.test(colA) && colB && colC && /math|calc|prep|algebra|geometry|science|english|history|period|ap|honors/i.test(colB)) {
           const p = targetSelect !== 'auto' ? targetSelect : colA;
           if (!clearedPeriods[p]) {
             updatedRosters[p] = { course: colB, students: [] };
@@ -973,11 +1167,13 @@
           return;
         }
 
+        // Format B: Standard Roster Sheet where Col A is student index (1..22) and Col B is Student Name
         let studentName = "";
         if (/^\d+$/.test(colA) && colB) {
-          studentName = colC ? (colB + " " + colC) : colB;
+          // If an unquoted CSV split "Alarcon Quintana, Alex" into colB and colC, rejoin them with ", "!
+          studentName = colC ? (colB + ", " + colC) : colB;
         } else if (colA && !/^\d+$/.test(colA)) {
-          studentName = colA;
+          studentName = colB ? (colA + ", " + colB) : colA;
         } else if (!colA && colB && !/^\d+\s*students?$/i.test(colB)) {
           studentName = colB;
         }
@@ -997,7 +1193,7 @@
       localStorage.setItem('hallPassRosters', JSON.stringify(appState.rosters));
       renderTeacherRosters();
       closeImportModal();
-      showToast("Rosters dynamically mapped & saved!");
+      showToast("All students (including 'Last, First' names) accurately mapped!");
     }
 
     function generateLogsCSV() {
@@ -1045,15 +1241,23 @@
     function renderLogsTable() {
       const tbody = document.getElementById('logs-table-body');
       document.getElementById('log-count').innerText = appState.logs.length;
+      const unsyncedCount = appState.logs.filter(l => !l.syncedToSheet).length;
+      const unsyncedEl = document.getElementById('unsynced-count');
+      if (unsyncedEl) unsyncedEl.innerText = unsyncedCount;
+
       tbody.innerHTML = '';
       appState.logs.slice(0, 50).forEach(log => {
         const tr = document.createElement('tr');
+        const syncBadge = log.syncedToSheet 
+          ? '<span style="color:var(--success); font-size:0.75rem;">✓ Synced</span>' 
+          : '<span style="color:var(--warning); font-size:0.75rem;">Pending</span>';
         tr.innerHTML = '<td>' + log.date + ' ' + log.departTime + '</td>' +
           '<td>P' + log.period + '</td>' +
           '<td><strong>' + log.studentName + '</strong></td>' +
           '<td>' + log.reason + '</td>' +
           '<td>' + log.totalMinutesOut + '</td>' +
-          '<td style="color:' + (log.status === 'ON TIME' ? 'var(--success)' : 'var(--danger)') + '; font-weight:700;">' + log.status + '</td>';
+          '<td style="color:' + (log.status === 'ON TIME' ? 'var(--success)' : 'var(--danger)') + '; font-weight:700;">' + log.status + '</td>' +
+          '<td>' + syncBadge + '</td>';
         tbody.appendChild(tr);
       });
     }
