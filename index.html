@@ -40,29 +40,38 @@
     }
     .btn-header:hover { background: rgba(255, 255, 255, 0.15); }
 
-    .container { max-width: 900px; margin: 0 auto; width: 100%; padding: 20px; flex: 1; display: flex; flex-direction: column; }
-    .view-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); margin-bottom: 16px; }
-    h2 { font-size: 1.4rem; margin-bottom: 12px; font-weight: 700; }
-    h3 { font-size: 1.05rem; margin-bottom: 10px; color: var(--text-muted); }
+    .container { max-width: 1200px; margin: 0 auto; width: 100%; padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+    .view-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); width: 100%; }
+    h2 { font-size: 1.6rem; margin-bottom: 12px; font-weight: 700; }
+    h3 { font-size: 1.15rem; margin-bottom: 10px; color: var(--text-muted); }
 
-    .primary-reasons-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-    .big-reason-btn {
-      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
-      border-radius: 12px; padding: 20px; color: var(--text-main); text-align: left; cursor: pointer;
-    }
-    .big-reason-btn:active { background: var(--primary); }
-    .big-reason-title { font-size: 1.25rem; font-weight: 700; display: block; }
-    .big-reason-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; display: block; }
+    /* Active Passes: Large & Highlighted at the top */
+    #section-active-list { order: 1; width: 100%; }
+    #view-landing { order: 2; width: 100%; }
 
     .active-pass-card {
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
-      border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+      background: rgba(59, 130, 246, 0.12); border: 2px solid var(--primary);
+      border-radius: 14px; padding: 20px 24px; margin-bottom: 14px;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25);
     }
-    .timer-badge { font-size: 1.3rem; font-weight: 800; font-family: monospace; }
+    .timer-badge { font-size: 1.8rem; font-weight: 900; font-family: monospace; }
     .timer-ontime { color: var(--success); }
-    .timer-overdue { color: var(--danger); }
-    .btn-return { background: var(--success); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .timer-overdue { color: var(--danger); animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .btn-return { background: var(--success); color: #fff; border: none; padding: 14px 24px; border-radius: 10px; font-weight: 800; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+    .btn-return:hover { background: #059669; }
+
+    /* Reason Selectors: Compact & at the bottom when active passes exist */
+    .primary-reasons-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
+    .big-reason-btn {
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-color);
+      border-radius: 14px; padding: 24px; color: var(--text-main); text-align: left; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .big-reason-btn:hover { background: rgba(59, 130, 246, 0.15); border-color: var(--primary); transform: translateY(-2px); }
+    .big-reason-title { font-size: 1.4rem; font-weight: 800; display: block; }
+    .big-reason-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 6px; display: block; }
 
     .selection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
     .tile-btn {
