@@ -444,7 +444,8 @@
 
       document.getElementById('pass-limit-display').innerText = appState.maxPasses;
       document.getElementById('pass-limit-input').value = appState.maxPasses;
-      document.getElementById('webhook-url-input').value = appState.webhookUrl;
+      document.getElementById('webhook-url-input').value = UNIVERSAL_RELAY_ENDPOINT;
+      document.getElementById('target-sheet-url-input').value = localStorage.getItem('targetSheetUrl') || '';
       updateKioskBadge();
       renderActivePasses();
       renderTeacherRosters();
@@ -487,13 +488,24 @@
       }
     }
 
+    function saveTargetSheetUrl() {
+      const raw = document.getElementById('target-sheet-url-input').value.trim();
+      const sheetId = extractGoogleSheetId(raw);
+      if (!sheetId) {
+        return alert("Invalid Google Sheet link. Please paste a link containing /spreadsheets/d/...");
+      }
+      localStorage.setItem('targetSheetUrl', raw);
+      showToast("Classroom Google Sheet link saved!");
+    }
+
+    function getActiveEndpointAndSheetId() {
+      const rawTarget = (localStorage.getItem('targetSheetUrl') || document.getElementById('target-sheet-url-input')?.value || "").trim();
+      const sheetId = extractGoogleSheetId(rawTarget);
+      return { endpoint: UNIVERSAL_RELAY_ENDPOINT, sheetId: sheetId };
+    }
+
     function saveWebhookUrl() {
-      const raw = document.getElementById('webhook-url-input').value;
-      const cleaned = cleanDynamicWebhookUrl(raw);
-      appState.webhookUrl = cleaned;
-      document.getElementById('webhook-url-input').value = cleaned;
-      localStorage.setItem('webhookUrl', cleaned);
-      if (cleaned) showToast("Webhook URL saved!");
+      saveTargetSheetUrl();
     }
 
     function openQrModal() {
