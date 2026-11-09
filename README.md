@@ -4,7 +4,13 @@
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live_Kiosk-38bdf8?style=for-the-badge&logo=googlechrome&logoColor=white)](https://soniran635.github.io/hall-pass/)
 [![License: Proprietary](https://img.shields.io/badge/License-All_Rights_Reserved-red.svg?style=for-the-badge)](#copyright--intellectual-property)
-[![Platform](https://img.shields.io/badge/Platform-iPad_|_Android_|_Fire_OS_|_Web-blueviolet?style=for-the-badge)](#recommended-hardware--lockdown)
+[![Platform](https://img.shields.io/badge/Platform-iPad_|_MacBook_|_Android_|_Web-blueviolet?style=for-the-badge)](#recommended-hardware--lockdown)
+
+---
+
+## 🎬 Kiosk in Action
+
+![Hall Pass Kiosk Demo](./hallpass.gif)
 
 ---
 
@@ -20,7 +26,9 @@ The kiosk features an **Authorized Teacher Activation Gate**:
 
 ## 🌟 Key Features
 
+- **True Universal Plug-and-Play & Two-Way Sync:** Teachers can set up the app instantly by simply pasting their normal Google Sheet URL. The standalone Universal Relay Engine handles all API requests securely in the background, pulling class rosters and pushing log data without duplicates or CORS errors.
 - **Tablet & Touchscreen Optimized:** Designed with strict anti-zoom constraints (`font-size >= 16px`), zero tap delays (`touch-action: manipulation`), and non-selectable UI elements (`user-select: none`).
+- **Dynamic Fullscreen Layout:** Features a responsive, widescreen-optimized interface with prominent active pass highlighting at the top and sequential vertical reason stacks.
 - **Fully Bilingual (EN / ES):** English and Spanish labels on all student-facing screens (Reason selection, Period selection, Name search, Overdue explanations, and Return buttons).
 - **Multi-Student Live Pass Management:** Configurable concurrent pass limits (1 to 10 students out at once) with independent live timers and check-in buttons.
 - **Dynamic 3-Stage Smart Timer & Overdue Gate:**
@@ -28,9 +36,9 @@ The kiosk features an **Authorized Teacher Activation Gate**:
   - 🟡 **Grace Period:** Configurable grace window (default: +90 seconds) with an amber warning badge.
   - 🔴 **Overdue (+2m Explanation):** If a student exceeds the grace period by more than 2 minutes, the app prompts for an explanation upon return (*"Long line at restroom"*, *"Spoke with staff"*, *"Nurse visit"*, or custom reason).
 - **Dual-Sync Logging:**
-  - **Local Persistence:** Stores timestamped history in browser storage with instant CSV export.
+  - **Local Persistence:** Stores timestamped history in browser storage with instant CSV export and manual pass entry options.
   - **Cloud Webhook:** Seamlessly logs departure time, return time, overdue explanations, and security events directly to Google Sheets in real-time.
-- **Dynamic Period Roster Control:** Teachers can dynamically add/remove periods (1–7, 8, Advisory, Homeroom), import Excel/CSV sheets, or paste roster columns directly.
+- **Dynamic Period Roster Control:** Teachers can dynamically add/remove periods, import Excel/CSV files, or paste roster columns directly with intelligent name-parsing (preserving formats like "Last, First").
 
 ---
 
@@ -42,8 +50,9 @@ The application is deployed live via GitHub Pages at:
 ### Daily Classroom Startup:
 1. Open **[https://soniran635.github.io/hall-pass/](https://soniran635.github.io/hall-pass/)** on the classroom tablet or browser.
 2. Enter the Teacher PIN (**`1234`**) and click **"Unlock Class Kiosk / Activar Kiosco"**.
-3. (Optional) In the Teacher Area, tap **"🔒 LAUNCH KIOSK LOCKDOWN MODE"** to enter full-screen mode.
-4. Place the tablet on the stand for student check-outs.
+3. In the Teacher Area, paste your normal Google Sheet URL into Section 1 and click **Save Sheet Link**.
+4. Tap **"🔒 Lock Kiosk"** to return to secure kiosk mode.
+5. Place the device on the stand for student check-outs.
 
 ---
 
@@ -51,8 +60,9 @@ The application is deployed live via GitHub Pages at:
 
 | Platform | Recommended Device | Recommended Lockdown Method |
 | :--- | :--- | :--- |
-| **Amazon Fire OS** | Amazon Fire HD 8 / 10 | **Fully Kiosk Browser** (Sets start URL, disables status bar, home, and back buttons behind PIN) |
 | **iOS / iPadOS** | iPad (9th Gen or newer) | **Guided Access** (Triple-click lock with passcode protection) |
+| **macOS / Web** | MacBook / Touch Monitor | **Browser Fullscreen Mode** (`Control + Command + F`) |
+| **Amazon Fire OS** | Amazon Fire HD 8 / 10 | **Fully Kiosk Browser** (Sets start URL, disables status bar, home, and back buttons behind PIN) |
 | **Android** | Samsung Galaxy Tab / Lenovo | **App Pinning** (Enforces device PIN before unpinning browser) |
 
 ---
